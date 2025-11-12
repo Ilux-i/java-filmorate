@@ -17,17 +17,17 @@ public class FilmController {
 
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
     private static HashMap<Long, Film> films = new HashMap<>();
-    private static long idCounter = 0;
+    private static long idCounter = 1;
 
     @PostMapping
     public Film addFilm(@RequestBody final Film film) {
         if (valid(film)) {
             Film newFilm = Film.builder().id(getIdCounter()).name(film.getName()).description(film.getDescription()).releaseDate(film.getReleaseDate()).duration(film.getDuration()).build();
             films.put(newFilm.getId(), newFilm);
-            log.info("Film {} added", newFilm.getId());
+            log.info("Film {} added", newFilm);
             return newFilm;
         } else {
-            log.info("Film {} not valid when added", film);
+            log.warn("Film {} not valid when added", film);
             throw new ValidationException("Film no valid");
         }
     }
@@ -36,10 +36,10 @@ public class FilmController {
     public Film updateFilm(@RequestBody final Film film) {
         if (film.getId() != null && films.containsKey(film.getId())) {
             Film oldFilm = films.get(film.getId());
-            if (film.getName().isEmpty()) {
+            if (film.getName() == null) {
                 film.setName(oldFilm.getName());
             }
-            if (film.getDescription().isEmpty()) {
+            if (film.getDescription() == null) {
                 film.setDescription(oldFilm.getDescription());
             }
             if (film.getReleaseDate() == null) {
@@ -50,10 +50,10 @@ public class FilmController {
             }
             if (valid(film)) {
                 films.put(film.getId(), film);
-                log.info("Film {} updated", film.getId());
+                log.info("Film {} updated", film);
                 return film;
             } else {
-                log.info("Film {} not valid when updated", film);
+                log.warn("Film {} not valid when updated", film);
                 throw new ValidationException("Film no valid");
             }
         } else {
@@ -72,7 +72,7 @@ public class FilmController {
                 !film.getName().isEmpty() &&
                 film.getDescription().length() <= 200 &&
                 film.getReleaseDate().isAfter(LocalDate.of(1895, Month.DECEMBER, 28)) &&
-                film.getDuration().isPositive();
+                film.getDuration() > 0;
     }
 
     public static long getIdCounter() {

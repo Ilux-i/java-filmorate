@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.controller.FilmController;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
-import java.time.Duration;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +25,7 @@ class FilmControllerTest {
                 .name("Film Name")
                 .description("Description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
 
         Film result = filmController.addFilm(film);
@@ -41,7 +40,7 @@ class FilmControllerTest {
                 .name("")
                 .description("Description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
 
         assertThrows(ValidationException.class, () -> filmController.addFilm(film));
@@ -53,7 +52,7 @@ class FilmControllerTest {
                 .name("Name")
                 .description("A".repeat(201))
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
 
         assertThrows(ValidationException.class, () -> filmController.addFilm(film));
@@ -65,7 +64,7 @@ class FilmControllerTest {
                 .name("Original Name")
                 .description("Description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         Film addedFilm = filmController.addFilm(film);
 
@@ -74,7 +73,7 @@ class FilmControllerTest {
                 .name("Updated Name")
                 .description("New Description")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(150))
+                .duration(150)
                 .build();
 
         Film result = filmController.updateFilm(updatedFilm);
@@ -89,13 +88,13 @@ class FilmControllerTest {
                 .name("Film 1")
                 .description("Description 1")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(120))
+                .duration(120)
                 .build();
         Film film2 = Film.builder()
                 .name("Film 2")
                 .description("Description 2")
                 .releaseDate(LocalDate.of(2000, 1, 1))
-                .duration(Duration.ofMinutes(90))
+                .duration(90)
                 .build();
 
         filmController.addFilm(film1);

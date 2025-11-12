@@ -16,7 +16,7 @@ public class UserController {
 
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
     private static HashMap<Long, User> users = new HashMap<>();
-    private static long idCounter = 0;
+    private static long idCounter = 1;
 
     @PostMapping
     public User addUser(@RequestBody final User user) {
@@ -24,13 +24,7 @@ public class UserController {
             if (user.getName() == null || user.getName().isEmpty()) {
                 user.setName(user.getLogin());
             }
-            User newUser = User.builder()
-                    .id(getIdCounter())
-                    .login(user.getLogin())
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .birthday(user.getBirthday())
-                    .build();
+            User newUser = User.builder().id(getIdCounter()).login(user.getLogin()).email(user.getEmail()).name(user.getName()).birthday(user.getBirthday()).build();
             users.put(newUser.getId(), newUser);
             log.info("User {} added", newUser.getId());
             return newUser;
@@ -77,11 +71,7 @@ public class UserController {
     }
 
     private boolean valid(User user) {
-        return !user.getEmail().isEmpty() &&
-                user.getEmail().contains("@") &&
-                !user.getLogin().isEmpty() &&
-                !user.getLogin().contains(" ") &&
-                user.getBirthday().isBefore(LocalDate.now());
+        return !user.getEmail().isEmpty() && user.getEmail().contains("@") && !user.getLogin().isEmpty() && !user.getLogin().contains(" ") && user.getBirthday().isBefore(LocalDate.now());
     }
 
     public static long getIdCounter() {
