@@ -15,14 +15,23 @@ import java.util.HashMap;
 @RequestMapping("/films")
 public class FilmController {
 
+    private static final LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
+    private static final Integer MAX_LENGTH_DESCRIPTION = 200;
+
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
-    private static HashMap<Long, Film> films = new HashMap<>();
+    private HashMap<Long, Film> films = new HashMap<>();
     private static long idCounter = 1;
 
     @PostMapping
     public Film addFilm(@RequestBody final Film film) {
         if (valid(film)) {
-            Film newFilm = Film.builder().id(getIdCounter()).name(film.getName()).description(film.getDescription()).releaseDate(film.getReleaseDate()).duration(film.getDuration()).build();
+            Film newFilm = Film.builder()
+                    .id(getIdCounter())
+                    .name(film.getName())
+                    .description(film.getDescription())
+                    .releaseDate(film.getReleaseDate())
+                    .duration(film.getDuration())
+                    .build();
             films.put(newFilm.getId(), newFilm);
             log.info("Film {} added", newFilm);
             return newFilm;
@@ -70,8 +79,8 @@ public class FilmController {
     private boolean valid(Film film) {
         return film.getName() != null &&
                 !film.getName().isEmpty() &&
-                film.getDescription().length() <= 200 &&
-                film.getReleaseDate().isAfter(LocalDate.of(1895, Month.DECEMBER, 28)) &&
+                film.getDescription().length() <= MAX_LENGTH_DESCRIPTION &&
+                film.getReleaseDate().isAfter(CINEMA_BIRTHDAY) &&
                 film.getDuration() > 0;
     }
 
