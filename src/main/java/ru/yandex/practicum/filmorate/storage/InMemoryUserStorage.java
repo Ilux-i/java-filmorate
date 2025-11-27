@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
-import java.util.Collection;
 import java.util.HashMap;
 
 @Component
@@ -18,7 +17,7 @@ public class InMemoryUserStorage implements UserStorage {
     private static HashMap<Long, User> users = new HashMap<>();
     private static long idCounter = 1;
 
-    public User addUser(final User user){
+    public User addUser(final User user) {
         if (valid(user)) {
             if (user.getName() == null || user.getName().isEmpty()) {
                 user.setName(user.getLogin());
@@ -39,7 +38,7 @@ public class InMemoryUserStorage implements UserStorage {
         }
     }
 
-    public User updateUser(final User user){
+    public User updateUser(final User user) {
         if (user.getId() != null && users.containsKey(user.getId())) {
             User oldUser = users.get(user.getId());
             if (user.getLogin().isEmpty()) {
@@ -69,7 +68,9 @@ public class InMemoryUserStorage implements UserStorage {
         }
     }
 
-    public HashMap<Long, User> getAllUsers(){ return users; }
+    public HashMap<Long, User> getAllUsers() {
+        return users;
+    }
 
     private static boolean valid(User user) {
         return !user.getEmail().isEmpty() &&
