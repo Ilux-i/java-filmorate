@@ -3,12 +3,12 @@ package ru.yandex.practicum.filmorate.storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.util.Collection;
 import java.util.HashMap;
 
 @Component
@@ -18,7 +18,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     private static final Integer MAX_LENGTH_DESCRIPTION = 200;
 
     private static final Logger log = LoggerFactory.getLogger(InMemoryFilmStorage.class);
-    private HashMap<Long, Film> films = new HashMap<>();
+    private static HashMap<Long, Film> films = new HashMap<>();
     private static long idCounter = 1;
 
     public Film addFilm(final Film film) {
@@ -54,6 +54,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             if (film.getDuration() == null) {
                 film.setDuration(oldFilm.getDuration());
             }
+            film.setLikes(oldFilm.getLikes());
             if (valid(film)) {
                 films.put(film.getId(), film);
                 log.info("Film {} updated", film);
@@ -64,12 +65,12 @@ public class InMemoryFilmStorage implements FilmStorage {
             }
         } else {
             log.info("User does not have an Id");
-            throw new IllegalArgumentException("Id is missing");
+            throw new ObjectNotFoundException("Id is missing");
         }
     }
 
-    public Collection<Film> getAllFilms() {
-        return films.values();
+    public HashMap<Long, Film> getAllFilms() {
+        return films;
     }
 
     private boolean valid(Film film) {

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -14,7 +15,7 @@ import java.util.HashMap;
 public class InMemoryUserStorage implements UserStorage {
 
     private static final Logger log = LoggerFactory.getLogger(InMemoryUserStorage.class);
-    private HashMap<Long, User> users = new HashMap<>();
+    private static HashMap<Long, User> users = new HashMap<>();
     private static long idCounter = 1;
 
     public User addUser(final User user){
@@ -53,6 +54,7 @@ public class InMemoryUserStorage implements UserStorage {
             if (user.getBirthday() == null) {
                 user.setBirthday(oldUser.getBirthday());
             }
+            user.setFriends(oldUser.getFriends());
             if (valid(user)) {
                 users.put(user.getId(), user);
                 log.info("User {} updated", user.getId());
@@ -63,11 +65,11 @@ public class InMemoryUserStorage implements UserStorage {
             }
         } else {
             log.info("User does not have an Id");
-            throw new IllegalArgumentException("Id is missing");
+            throw new ObjectNotFoundException("Id is missing");
         }
     }
 
-    public Collection<User> getAllUsers(){ return users.values(); }
+    public HashMap<Long, User> getAllUsers(){ return users; }
 
     private static boolean valid(User user) {
         return !user.getEmail().isEmpty() &&
