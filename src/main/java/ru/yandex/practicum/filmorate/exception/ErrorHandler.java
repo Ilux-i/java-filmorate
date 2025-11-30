@@ -27,7 +27,7 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ErrorResponse handleOtherException(final Exception e) {
+    public ErrorResponse handleOtherException(final Throwable e) {
         return ErrorResponse.create(
                 e,
                 HttpStatusCode.valueOf(500),
