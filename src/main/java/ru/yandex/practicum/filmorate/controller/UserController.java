@@ -1,90 +1,57 @@
 package ru.yandex.practicum.filmorate.controller;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
-import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
 
+@Slf4j
 @RestController()
 @RequestMapping("/users")
+@RequiredArgsConstructor
 public class UserController {
 
-    private static final Logger log = LoggerFactory.getLogger(UserController.class);
-    private HashMap<Long, User> users = new HashMap<>();
-    private static long idCounter = 1;
+    @Autowired
+    private final UserService userService;
 
     @PostMapping
     public User addUser(@RequestBody final User user) {
-        if (valid(user)) {
-            if (user.getName() == null || user.getName().isEmpty()) {
-                user.setName(user.getLogin());
-            }
-            User newUser = User.builder()
-                    .id(getIdCounter())
-                    .login(user.getLogin())
-                    .email(user.getEmail())
-                    .name(user.getName())
-                    .birthday(user.getBirthday())
-                    .build();
-            users.put(newUser.getId(), newUser);
-            log.info("User {} added", newUser.getId());
-            return newUser;
-        } else {
-            log.warn("User {} not valid when added", user);
-            throw new ValidationException("User no valid ");
-        }
+        return userService.addUser(user);
     }
 
     @PutMapping
     public User updateUser(@RequestBody final User user) {
-        if (user.getId() != null && users.containsKey(user.getId())) {
-            User oldUser = users.get(user.getId());
-            if (user.getLogin().isEmpty()) {
-                user.setLogin(oldUser.getLogin());
-            }
-            if (user.getEmail().isEmpty()) {
-                user.setEmail(oldUser.getEmail());
-            }
-            if (user.getName().isEmpty()) {
-                user.setName(oldUser.getName());
-            }
-            if (user.getBirthday() == null) {
-                user.setBirthday(oldUser.getBirthday());
-            }
-            if (valid(user)) {
-                users.put(user.getId(), user);
-                log.info("User {} updated", user.getId());
-                return user;
-            } else {
-                log.warn("User {} not valid when updated", user);
-                throw new ValidationException("User no valid");
-            }
-        } else {
-            log.info("User does not have an Id");
-            throw new IllegalArgumentException("Id is missing");
-        }
+        return userService.updateUser(user);
+    }
 
+    @PutMapping("/{id}/friends/{friendId}")
+    public User addFriends(@PathVariable final long id, @PathVariable final long friendId) {
+        return userService.addFriend(id, friendId);
     }
 
     @GetMapping
     public Collection<User> getAllUsers() {
-        return users.values();
+        return userService.getAllUsers();
     }
 
-    private static boolean valid(User user) {
-        return !user.getEmail().isEmpty() &&
-                user.getEmail().contains("@") &&
-                !user.getLogin().isEmpty() &&
-                !user.getLogin().contains(" ") &&
-                user.getBirthday().isBefore(LocalDate.now());
+    @GetMapping("/{id}/friends")
+    public Collection<User> getFriends(@PathVariable final long id) {
+        return userService.getFriends(id);
     }
 
-    public static long getIdCounter() {
-        return idCounter++;
+    @GetMapping("/{id}/friends/common/{otherId}")
+    public Collection<User> getMutualFriends(@PathVariable final long id, @PathVariable final long otherId) {
+        return userService.getListOfMutualFriends(id, otherId);
     }
+
+    @DeleteMapping("/{id}/friends/{friendId}")
+    public void removeFriend(@PathVariable long id, @PathVariable long friendId) {
+        userService.removeFriend(id, friendId);
+    }
+
+
 }
