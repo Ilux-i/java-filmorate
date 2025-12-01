@@ -40,7 +40,11 @@ public class FilmService {
 
     public Film updateFilm(final Film film) {
         HashMap<Long, Film> films = new HashMap<>();
-        if (film.getId() != null && films.containsKey(film.getId())) {
+        if (film.getId() != null) {
+            if (!films.containsKey(film.getId())) {
+                log.warn("Фильм с id: {} не найден", film.getId());
+                throw new ObjectNotFoundException("В бд нет такого фильма");
+            }
             Film oldFilm = films.get(film.getId());
             if (film.getName() == null) {
                 film.setName(oldFilm.getName());
