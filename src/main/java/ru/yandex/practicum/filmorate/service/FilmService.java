@@ -39,7 +39,7 @@ public class FilmService {
     }
 
     public Film updateFilm(final Film film) {
-        HashMap<Long, Film> films = new HashMap<>();
+        HashMap<Long, Film> films = filmStorage.getAllFilms();
         if (film.getId() != null) {
             if (!films.containsKey(film.getId())) {
                 log.warn("Фильм с id: {} не найден", film.getId());
