@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
-import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFriendDto;
 
 @Slf4j
 @Service
@@ -67,54 +69,41 @@ public class UserService {
         User user = userStorage.getAllUsers().get(idUser);
         User friend = userStorage.getAllUsers().get(idFriend);
         if (user != null && friend != null) {
-            user.getFriends()
-                    .add(idFriend);
-            friend.getFriends()
-                    .add(user.getId());
-            log.info("Пользователи с id: {} и {}, теперь являются друзьями", user, friend);
+            userStorage.addFriend(mapToUserPairFriendDto(idUser, idFriend));
+            log.info("Пользователи с id: {} отправил запрос на друзья: {}", user, friend);
             return friend;
         } else {
             throw new ObjectNotFoundException("Неверны id");
         }
     }
 
-    public void removeFriend(final long idUser, final long idFriend) {
-
-        User friend = userStorage.getAllUsers().get(idFriend);
-        User user = userStorage.getAllUsers().get(idUser);
-        if (user != null && friend != null) {
-            user.getFriends()
-                    .remove(idFriend);
-            friend.getFriends()
-                    .remove(idUser);
-            log.info("Пользователи с id: {} и {}, больше не являются друзьями", user, friend);
-        } else {
-            throw new ObjectNotFoundException("Неверны id");
-        }
-    }
+//    public void removeFriend(final long idUser, final long idFriend) {
+//
+//        User friend = userStorage.getAllUsers().get(idFriend);
+//        User user = userStorage.getAllUsers().get(idUser);
+//        if (user != null && friend != null) {
+//            user.getFriends()
+//                    .remove(idFriend);
+//            friend.getFriends()
+//                    .remove(idUser);
+//            log.info("Пользователи с id: {} и {}, больше не являются друзьями", user, friend);
+//        } else {
+//            throw new ObjectNotFoundException("Неверны id");
+//        }
+//    }
 
     public Collection<User> getFriends(final long id) {
-        User user = userStorage.getAllUsers().get(id);
-        if (user == null) {
-            throw new ObjectNotFoundException("Не найден друг с id: " + id);
-        }
-        return user.getFriends().stream()
-                .map(ind -> userStorage.getAllUsers().get(ind))
-                .collect(Collectors.toList());
+        User user = userStorage.getUserById(id)
+                .orElseThrow(() -> new ObjectNotFoundException("Не найден пользователь с id: " + id));
+        Set<Long> friendIds = userStorage.getFriendsByUser(user).keySet();
+        return friendIds.stream()
+                .map(friendId -> userStorage.getUserById(friendId)
+                        .orElseThrow(() -> new ObjectNotFoundException("Не найден друг с id: " + friendId)))
+                .toList();
     }
 
-    public Collection<User> getListOfMutualFriends(final long userId, final long friendId) {
-        User user = userStorage.getAllUsers().get(userId);
-        User friend = userStorage.getAllUsers().get(friendId);
-
-        if (user == null || friend == null) return Collections.emptyList();
-
-        Set<Long> mutualFriends = new HashSet<>(user.getFriends());
-        mutualFriends.retainAll(friend.getFriends());
-
-        return mutualFriends.stream()
-                .map(id -> userStorage.getAllUsers().get(id))
-                .toList();
+    public long confirmedFriend(final long idUser, final long idFriend){
+        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
     }
 
     private static boolean valid(User user) {

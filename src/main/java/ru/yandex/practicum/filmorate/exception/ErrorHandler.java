@@ -26,6 +26,8 @@ public class ErrorHandler {
         );
     }
 
+    // Добавить обработку InternalServerException
+
     @ExceptionHandler
     public ErrorResponse handleOtherException(final Throwable e) {
         return ErrorResponse.create(
