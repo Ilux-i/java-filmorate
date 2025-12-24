@@ -3,8 +3,9 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+
 
 @Builder
 @Data
@@ -16,10 +17,5 @@ public class User {
     private LocalDate birthday;
 
     @Builder.Default
-    private Map<Long, FriendshipStatus> friends = new HashMap<>();
-}
-
-enum FriendshipStatus {
-    PENDING,
-    CONFIRMED
+    private Set<Long> friends = new HashSet<>();
 }
