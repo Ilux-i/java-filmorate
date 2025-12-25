@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
-import java.util.Optional;
 
 public interface UserStorage {
 
@@ -13,7 +12,7 @@ public interface UserStorage {
 
     User updateUser(final User user);
 
-    Optional<User> getUserById(long userId);
+    User getUserById(long userId);
 
     HashMap<Long, User> getAllUsers();
 

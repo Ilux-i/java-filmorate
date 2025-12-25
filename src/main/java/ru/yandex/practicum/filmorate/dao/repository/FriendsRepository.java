@@ -20,12 +20,12 @@ public class FriendsRepository extends BaseRepository<FriendDto> {
             "SELECT * " +
                     "FROM friends " +
                     "WHERE " +
-                        "friends_id = ? " +
-                        "AND status = " + FriendshipStatus.PENDING;
-    private static final String INSERT_QUERY = "INSERT INTO friends(user_id, friends_id)" +
-            "VALUES (?, ?) returning id";
+                        "friend_id = ? " +
+                        "AND status = ?";
+    private static final String INSERT_QUERY = "INSERT INTO friends(user_id, friend_id, status) " +
+            "VALUES (?, ?, ?)";
     private static final String CONFIRM_FRIEND_QUERY = "UPDATE friends SET status = " + FriendshipStatus.CONFIRMED +
-            " WHERE user_id = ? AND friends_id = ?";
+            " WHERE user_id = ? AND friend_id = ?";
     private static final String REMOVE_FRIEND_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
 
     public FriendsRepository(JdbcTemplate jdbc, RowMapper<FriendDto> mapper) {
@@ -37,15 +37,20 @@ public class FriendsRepository extends BaseRepository<FriendDto> {
     }
 
     public List<FriendDto> findFriendRequestsByUserId(long userId) {
-        return findMany(FIND_FRIEND_REQUESTS_BY_ID_QUERY, userId);
+        return findMany(
+                FIND_FRIEND_REQUESTS_BY_ID_QUERY,
+                userId,
+                FriendshipStatus.CONFIRMED.toString()
+        );
     }
 
     public long addFriend(PairFriendDto dto) {
         return insert(
                 INSERT_QUERY,
                 dto.getUserId(),
-                dto.getFriendId()
-                );
+                dto.getFriendId(),
+                FriendshipStatus.CONFIRMED.toString()
+        );
     }
 
     public long confirmFriend(PairFriendDto dto) {

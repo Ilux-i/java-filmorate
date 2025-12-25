@@ -19,7 +19,7 @@ public class UserRowMapper implements RowMapper<User> {
                 .name(resultSet.getString("name"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
-                .birthday(LocalDate.from(birthday.toInstant()))
+                .birthday(LocalDate.from(birthday.toLocalDateTime()))
                 .build();
     }
 }

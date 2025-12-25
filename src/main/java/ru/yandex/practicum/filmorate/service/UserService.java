@@ -19,7 +19,6 @@ import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFri
 import static ru.yandex.practicum.filmorate.mapper.UserMapper.mapToUpdateUserRequest;
 import static ru.yandex.practicum.filmorate.mapper.UserMapper.updateUserFields;
 
-// Нет удаление пользователя
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -39,8 +38,7 @@ public class UserService {
 
     public User updateUser(final User user) {
         if (user.getId() != null) {
-            User oldUser = userStorage.getUserById(user.getId())
-                    .orElseThrow(() -> new ObjectNotFoundException("User with id " + user.getId() + " not found"));
+            User oldUser = userStorage.getUserById(user.getId());
             UpdateUserRequest updateUser = mapToUpdateUserRequest(user);
             User result = updateUserFields(oldUser, updateUser);
             if (valid(result)) {
@@ -63,30 +61,27 @@ public class UserService {
     }
 
 
-    public long addFriend(final long idUser, final long idFriend) {
-        userStorage.getUserById(idUser)
-                .orElseThrow(() -> new ObjectNotFoundException("User with id " + idUser + " not found"));
-        userStorage.getUserById(idFriend)
-                .orElseThrow(() -> new ObjectNotFoundException("User with id " + idFriend + " not found"));
+    public User addFriend(final long idUser, final long idFriend) {
+        User user = userStorage.getUserById(idUser);
+        userStorage.getUserById(idFriend);
         long id = userStorage.addFriend(mapToUserPairFriendDto(idUser, idFriend));
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
-        return id;
+        return user;
     }
 
     public void removeFriend(final long idUser, final long idFriend) {
+        User user = userStorage.getUserById(idUser);
+        userStorage.getUserById(idFriend);
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
-
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
-        } else {
-            throw new ObjectNotFoundException("Неверны id");
         }
     }
 
     public Collection<User> getFriends(final long id) {
+        userStorage.getUserById(id);
         Set<Long> friendIds = userStorage.getFriendsByUser(id).keySet();
         return friendIds.stream()
-                .map(friendId -> userStorage.getUserById(friendId)
-                        .orElseThrow(() -> new ObjectNotFoundException("Не найден друг с id: " + friendId)))
+                .map(friendId -> userStorage.getUserById(friendId))
                 .toList();
     }
 
@@ -111,7 +106,6 @@ public class UserService {
         return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
     }
 
-
     private static boolean valid(User user) {
         return !user.getEmail().isEmpty() &&
                 user.getEmail().contains("@") &&
@@ -120,4 +114,14 @@ public class UserService {
                 user.getBirthday().isBefore(LocalDate.now());
     }
 
+
+    public Collection<User> getListOfMutualFriends(long id, long otherId) {
+        userStorage.getUserById(id);
+        userStorage.getUserById(otherId);
+        Set<Long> friends = userStorage.getFriendsByUser(id).keySet();
+        return userStorage.getFriendsByUser(otherId).keySet().stream()
+                .filter(friends::contains)
+                .map(userStorage::getUserById)
+                .toList();
+    }
 }

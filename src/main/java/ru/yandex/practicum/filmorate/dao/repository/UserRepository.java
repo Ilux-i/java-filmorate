@@ -1,22 +1,26 @@
 package ru.yandex.practicum.filmorate.dao.repository;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.model.User;
 
+import java.sql.Date;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Repository
 public class UserRepository extends BaseRepository<User> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday)" +
-            "VALUES (?, ?, ?, ?) returning id";
+    private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) " +
+            "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
 
@@ -38,7 +42,7 @@ public class UserRepository extends BaseRepository<User> {
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
-                Timestamp.from(Instant.from(user.getBirthday()))
+                Date.valueOf(user.getBirthday())
         );
         user.setId(id);
         return user;
@@ -50,7 +54,7 @@ public class UserRepository extends BaseRepository<User> {
                 user.getEmail(),
                 user.getLogin(),
                 user.getName(),
-                Timestamp.from(Instant.from(user.getBirthday())),
+                Date.valueOf(user.getBirthday()),
                 user.getId()
         );
         return user;

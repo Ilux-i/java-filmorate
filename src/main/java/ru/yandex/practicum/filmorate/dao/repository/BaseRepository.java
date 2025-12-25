@@ -52,12 +52,11 @@ public class BaseRepository<T> {
             }
             return ps;}, keyHolder);
 
-        Long id = keyHolder.getKeyAs(Long.class);
-
-        if (id != null) {
-            return id;
+        Number key = keyHolder.getKey();
+        if (key != null) {
+            return key.longValue();
         } else {
-            throw new InternalServerException("Не удалось сохранить данные");
+            throw new RuntimeException("Не удалось получить ID после вставки");
         }
     }
 }

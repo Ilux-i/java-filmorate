@@ -74,9 +74,7 @@ public class FilmService {
     public Film addLike(final long userId, final long filmId) {
         Film film = filmStorage.getFilmById(filmId)
                 .orElseThrow(() -> new ObjectNotFoundException("Film with id " + filmId + " not found"));
-        userStorage.getUserById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User with id " + userId + " not found"));
-
+        userStorage.getUserById(userId);
         filmStorage.setLike(userId, filmId);
         log.info("Пользователь с id: {}, поставил лайк на фильм с id: {}", userId, filmId);
         return film;
@@ -85,8 +83,7 @@ public class FilmService {
     public void removeLike(final long userId, final long filmId) {
         filmStorage.getFilmById(filmId)
                 .orElseThrow(() -> new ObjectNotFoundException("Film with id " + filmId + " not found"));;
-        userStorage.getUserById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User with id " + userId + " not found"));;
+        userStorage.getUserById(userId);
 
         if(filmStorage.removeLike(userId, filmId)) {
             log.info("Пользователь с id: {}, удалил лайк на фильм с id: {}", userId, filmId);

@@ -5,11 +5,11 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
 import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
 import ru.yandex.practicum.filmorate.dto.friend.PairFriendDto;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
-import java.util.Optional;
 
 @Component("UserDbStorage")
 @RequiredArgsConstructor
@@ -32,8 +32,11 @@ public class UserDbStorage implements UserStorage {
 
     // Получение пользователя
     @Override
-    public Optional<User> getUserById(long userId) {
-        return userRepository.findById(userId);
+    public User getUserById(long userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User with id " + userId + " not found"));;
+        user.setFriends(getFriendsByUser(userId));
+        return user;
     }
 
     // Получение всех пользователей
