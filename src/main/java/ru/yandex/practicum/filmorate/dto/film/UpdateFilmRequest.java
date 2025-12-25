@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dto.film;
 
 import lombok.Data;
-import ru.yandex.practicum.filmorate.model.Rating;
 
 import java.time.LocalDate;
 
@@ -11,7 +10,7 @@ public class UpdateFilmRequest {
     private String description;
     private LocalDate releaseDate;
     private Integer duration;
-    private Rating rating;
+    private Long ratingId;
 
     public boolean hasName() {
         return ! (name == null || name.isBlank());
@@ -30,7 +29,7 @@ public class UpdateFilmRequest {
     }
 
     public boolean hasRating() {
-        return ! (rating == null);
+        return ! (ratingId == null);
     }
 
 }

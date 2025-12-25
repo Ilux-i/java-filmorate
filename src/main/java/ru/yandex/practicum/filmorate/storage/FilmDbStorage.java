@@ -6,9 +6,7 @@ import ru.yandex.practicum.filmorate.dao.repository.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.repository.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
-import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -30,7 +28,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         film.getGenres()
-                .forEach(genre -> removeGenreInFilm(film.getId(), genre));
+                .forEach(genreId -> removeGenreInFilm(film.getId(), genreId));
         return filmRepository.add(film);
     }
 
@@ -66,29 +64,29 @@ public class FilmDbStorage implements FilmStorage {
 
     // Получение списка жанров по фильму
     @Override
-    public Set<Genre> getGenresByFilm(long filmId) {
-        Set<Genre> result = new HashSet<>();
-        filmGenreRepository.findAllByFilm(filmId).forEach(dto -> result.add(dto.getGenre()));
+    public Set<Long> getGenresByFilm(long filmId) {
+        Set<Long> result = new HashSet<>();
+        filmGenreRepository.findAllByFilm(filmId).forEach(dto -> result.add(dto.getGenreId()));
         return result;
     }
 
     // Добавление жанра к фильму
     @Override
-    public FilmGenreDto addGenreInFilm(long filmId, Genre genre) {
-        return filmGenreRepository.add(mapToFilmGenreDto(filmId, genre));
+    public FilmGenreDto addGenreInFilm(long filmId, long genreId) {
+        return filmGenreRepository.add(mapToFilmGenreDto(filmId, genreId));
     }
 
     // Удаление жанра из фильма
     @Override
-    public boolean removeGenreInFilm(long filmId, Genre genre) {
-        return filmGenreRepository.remove(filmId, genre);
+    public boolean removeGenreInFilm(long filmId, long genreId) {
+        return filmGenreRepository.remove(filmId, genreId);
     }
 
 
     // Поставить лайк
     @Override
-    public LikeDto setLike(long userId, long filmId){
-        return likeRepository.add(mapToLikeDto(userId, filmId));
+    public void setLike(long userId, long filmId){
+        likeRepository.add(mapToLikeDto(userId, filmId));
     }
 
     // Получение количества лайков

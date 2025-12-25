@@ -6,12 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
-import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -102,22 +99,22 @@ public class FilmService {
         return filmStorage.getLikes(film.getId());
     }
 
-    public void addGenreInFilm(long filmId, String genre) {
+    public void addGenreInFilm(long filmId, long genreId) {
         try {
-            filmStorage.addGenreInFilm(filmId, Genre.valueOf(genre));
+            filmStorage.addGenreInFilm(filmId, genreId);
         } catch (IllegalArgumentException e) {
-            log.warn("Жанра '{}' не существует", genre);
+            log.warn("Жанра '{}' не существует", genreId);
         }
     }
 
-    private void updateGenres(long filmId, Set<Genre> genres) {
-        Set<Genre> oldGenres = filmStorage.getGenresByFilm(filmId);
+    private void updateGenres(long filmId, Set<Long> genres) {
+        Set<Long> oldGenres = filmStorage.getGenresByFilm(filmId);
 
-        Set<Genre> toRemove = oldGenres.stream()
+        Set<Long> toRemove = oldGenres.stream()
                 .filter(genre -> !genres.contains(genre))
                 .collect(Collectors.toSet());
 
-        Set<Genre> toAdd = genres.stream()
+        Set<Long> toAdd = genres.stream()
                 .filter(genre -> !oldGenres.contains(genre))
                 .collect(Collectors.toSet());
 
@@ -130,8 +127,7 @@ public class FilmService {
                 !film.getName().isEmpty() &&
                 film.getDescription().length() <= MAX_LENGTH_DESCRIPTION &&
                 film.getReleaseDate().isAfter(CINEMA_BIRTHDAY) &&
-                film.getDuration() > 0 &&
-                film.getRating().describeConstable().isPresent();
+                film.getDuration() > 0;
     }
 
 }

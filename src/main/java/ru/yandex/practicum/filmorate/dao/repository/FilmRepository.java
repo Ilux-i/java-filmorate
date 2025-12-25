@@ -14,10 +14,10 @@ import java.util.Optional;
 public class FilmRepository extends BaseRepository<Film> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM films";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM films WHERE id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, rating)" +
+    private static final String INSERT_QUERY = "INSERT INTO films(name, description, releaseDate, duration, ratingId)" +
             "VALUES (?, ?, ?, ?, ?) returning id";
     private static final String UPDATE_QUERY = "UPDATE films " +
-            "SET name = ?, description = ?, releaseDate = ?, duration = ?, rating = ? " +
+            "SET name = ?, description = ?, releaseDate = ?, duration = ?, ratingId = ? " +
             "WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
 
@@ -40,7 +40,7 @@ public class FilmRepository extends BaseRepository<Film> {
                 film.getDescription(),
                 Timestamp.from(Instant.from(film.getReleaseDate())),
                 film.getDuration(),
-                film.getRating().toString()
+                film.getRatingId()
         );
         film.setId(id);
         return film;
@@ -53,7 +53,7 @@ public class FilmRepository extends BaseRepository<Film> {
                 film.getDescription(),
                 Timestamp.from(Instant.from(film.getReleaseDate())),
                 film.getDuration(),
-                film.getRating().toString(),
+                film.getRatingId(),
                 film.getId()
         );
         return film;

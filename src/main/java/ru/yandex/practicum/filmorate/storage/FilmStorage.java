@@ -1,9 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
-import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -27,16 +25,16 @@ public interface FilmStorage {
     boolean removeFilm(Film film);
 
     // Получение списка жанров по фильму
-    Set<Genre> getGenresByFilm(long filmId);
+    Set<Long> getGenresByFilm(long filmId);
 
     // Добавление жанра к фильму
-    FilmGenreDto addGenreInFilm(long filmId, Genre genre);
+    FilmGenreDto addGenreInFilm(long filmId, long genreId);
 
     // Удаление жанра из фильма
-    boolean removeGenreInFilm(long filmId, Genre genre);
+    boolean removeGenreInFilm(long filmId, long genreId);
 
     // Поставить лайк
-    LikeDto setLike(long userId, long filmId);
+    void setLike(long userId, long filmId);
 
     // Получение количества лайков
     long getLikes(long filmId);
