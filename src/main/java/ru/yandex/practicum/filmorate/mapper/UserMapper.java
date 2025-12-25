@@ -2,9 +2,8 @@ package ru.yandex.practicum.filmorate.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import ru.yandex.practicum.filmorate.dto.NewUserRequest;
-import ru.yandex.practicum.filmorate.dto.UpdateUserRequest;
-import ru.yandex.practicum.filmorate.dto.UserDto;
+import ru.yandex.practicum.filmorate.dto.user.NewUserRequest;
+import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.model.User;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -16,6 +15,15 @@ public final class UserMapper {
                 .name(request.getName())
                 .birthday(request.getBirthday())
                 .build();
+    }
+
+    public static UpdateUserRequest mapToUpdateUserRequest(User user) {
+        UpdateUserRequest result = new UpdateUserRequest();
+        result.setLogin(user.getLogin());
+        result.setEmail(user.getEmail());
+        result.setName(user.getName());
+        result.setBirthday(user.getBirthday());
+        return result;
     }
     
     public static User updateUserFields(User user, UpdateUserRequest request) {
@@ -31,6 +39,7 @@ public final class UserMapper {
         if(request.hasBirthday()) {
             user.setBirthday(request.getBirthday());
         }
+
         return user;
     }
 }

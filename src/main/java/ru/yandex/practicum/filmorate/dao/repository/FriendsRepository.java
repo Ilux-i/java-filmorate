@@ -3,8 +3,8 @@ package ru.yandex.practicum.filmorate.dao.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
-import ru.yandex.practicum.filmorate.dto.PairFriendDto;
-import ru.yandex.practicum.filmorate.dto.FriendDto;
+import ru.yandex.practicum.filmorate.dto.friend.PairFriendDto;
+import ru.yandex.practicum.filmorate.dto.friend.FriendDto;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 
 import java.util.List;
@@ -26,6 +26,7 @@ public class FriendsRepository extends BaseRepository<FriendDto> {
             "VALUES (?, ?) returning id";
     private static final String CONFIRM_FRIEND_QUERY = "UPDATE friends SET status = " + FriendshipStatus.CONFIRMED +
             " WHERE user_id = ? AND friends_id = ?";
+    private static final String REMOVE_FRIEND_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
 
     public FriendsRepository(JdbcTemplate jdbc, RowMapper<FriendDto> mapper) {
         super(jdbc, mapper);
@@ -55,6 +56,8 @@ public class FriendsRepository extends BaseRepository<FriendDto> {
         );
     }
 
-
+    public boolean remove(PairFriendDto dto) {
+        return jdbc.update(REMOVE_FRIEND_QUERY, dto.getUserId(), dto.getFriendId()) > 0;
+    }
 
 }

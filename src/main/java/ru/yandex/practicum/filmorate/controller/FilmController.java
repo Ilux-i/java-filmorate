@@ -38,10 +38,10 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
-    @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") Long count) {
-        return filmService.getPopularFilms(count);
-    }
+//    @GetMapping("/popular")
+//    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") Long count) {
+//        return filmService.getPopularFilms(count);
+//    }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable final long id, @PathVariable final long userId) {

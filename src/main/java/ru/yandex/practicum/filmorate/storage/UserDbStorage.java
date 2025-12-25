@@ -1,15 +1,17 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
 import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
-import ru.yandex.practicum.filmorate.dto.PairFriendDto;
+import ru.yandex.practicum.filmorate.dto.friend.PairFriendDto;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
 import java.util.Optional;
 
+@Component("UserDbStorage")
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
 
@@ -40,9 +42,15 @@ public class UserDbStorage implements UserStorage {
         HashMap<Long, User> result = new HashMap<>();
         userRepository.findAll()
                 .stream()
-                .peek(user -> user.setFriends(getFriendsByUser(user)))
+                .peek(user -> user.setFriends(getFriendsByUser(user.getId())))
                 .forEach(user -> result.put(user.getId(), user));
         return result;
+    }
+
+    // Удаление пользователя
+    @Override
+    public boolean removeUser(User user) {
+        return userRepository.remove(user.getId());
     }
 
     // Добавление в друзья
@@ -59,9 +67,9 @@ public class UserDbStorage implements UserStorage {
 
     // Получения друзей
     @Override
-    public HashMap<Long, FriendshipStatus> getFriendsByUser(User user) {
+    public HashMap<Long, FriendshipStatus> getFriendsByUser(long userId) {
         HashMap<Long, FriendshipStatus> result = new HashMap<>();
-        friendsRepository.findFriendsByUserId(user.getId())
+        friendsRepository.findFriendsByUserId(userId)
                 .forEach(friendDto -> result.put(friendDto.getId(), friendDto.getStatus()));
         return result;
     }
@@ -73,6 +81,12 @@ public class UserDbStorage implements UserStorage {
         friendsRepository.findFriendRequestsByUserId(user.getId())
                 .forEach(friendDto -> result.put(friendDto.getId(), friendDto.getStatus()));
         return result;
+    }
+
+    // Удаление друга
+    @Override
+    public boolean removeFriend(PairFriendDto dto) {
+        return friendsRepository.remove(dto);
     }
 
 }

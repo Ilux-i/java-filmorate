@@ -2,7 +2,7 @@ package ru.yandex.practicum.filmorate.dao.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.FriendDto;
+import ru.yandex.practicum.filmorate.dto.friend.FriendDto;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 
 import java.sql.ResultSet;
