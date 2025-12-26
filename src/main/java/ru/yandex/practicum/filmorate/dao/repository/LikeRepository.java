@@ -25,8 +25,8 @@ public class LikeRepository extends BaseRepository<LikeDto> {
         return findMany(FIND_ALL_QUERY, filmId);
     }
 
-    public Optional<LikeDto> findById(long filmId, long user_id) {
-        return findOne(FIND_BY_ID_QUERY, filmId, user_id);
+    public Optional<LikeDto> findById(long filmId, long userId) {
+        return findOne(FIND_BY_ID_QUERY, filmId, userId);
     }
 
     public LikeDto add(LikeDto dto) {
@@ -43,8 +43,8 @@ public class LikeRepository extends BaseRepository<LikeDto> {
         return jdbc.queryForObject(COUNT_LIKES_FILM_QUERY, Long.class, filmId);
     }
 
-    public boolean remove(long filmId, long user_id) {
-        return jdbc.update(REMOVE_LIKE_QUERY, filmId, user_id) > 0;
+    public boolean remove(long filmId, long userId) {
+        return jdbc.update(REMOVE_LIKE_QUERY, filmId, userId) > 0;
     }
 
 }
