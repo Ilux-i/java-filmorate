@@ -6,8 +6,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
-import java.sql.Timestamp;
-import java.time.Instant;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +20,13 @@ public class FilmRepository extends BaseRepository<Film> {
             "SET name = ?, description = ?, releaseDate = ?, duration = ?, rating_id = ? " +
             "WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
+
+    private static final String FIND_POPULAR_FILM_QUERY = "select f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
+            "from FILMS as f " +
+            "right join LIKES as l on f.ID = l.FILM_ID " +
+            "group by f.ID " +
+            "order by count(l.ID) desc " +
+            "LIMIT ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -58,6 +64,13 @@ public class FilmRepository extends BaseRepository<Film> {
                 film.getId()
         );
         return film;
+    }
+
+    public Collection<Film> getPopular(long count) {
+        return findMany(
+                FIND_POPULAR_FILM_QUERY,
+                count
+        );
     }
 
     public boolean remove(long filmId) {

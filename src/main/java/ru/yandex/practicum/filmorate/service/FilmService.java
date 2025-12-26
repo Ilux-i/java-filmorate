@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.repository.RatingRepository;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -30,6 +31,9 @@ public class FilmService {
 
     private static final LocalDate CINEMA_BIRTHDAY = LocalDate.of(1895, Month.DECEMBER, 28);
     private static final Integer MAX_LENGTH_DESCRIPTION = 200;
+    private static final Integer COUNT_GENRES = 6;
+    private static final Integer COUNT_MPA = 5;
+
 
     @Autowired
     @Qualifier("FilmDbStorage")
@@ -37,6 +41,8 @@ public class FilmService {
     @Autowired
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
+    @Autowired
+    private RatingRepository ratingRepository;
 
     public Film addFilm(final Film film) {
         if (valid(film)) {
@@ -49,8 +55,7 @@ public class FilmService {
 
     public Film updateFilm(final Film film) {
         if (film.getId() != null) {
-            Film oldFilm = filmStorage.getFilmById(film.getId())
-                    .orElseThrow(() -> new ObjectNotFoundException("В бд нет такого фильма"));
+            Film oldFilm = filmStorage.getFilmById(film.getId());
             UpdateFilmRequest updateFilm = mapToUpdateFilmRequest(film);
             Film result = updateFilmFields(oldFilm, updateFilm);
             if (valid(result)) {
@@ -68,13 +73,20 @@ public class FilmService {
         }
     }
 
+    public Film getFilmById(final long id) {
+        return filmStorage.getFilmById(id);
+    }
+
+    public Collection<Film> getPopularFilms(Long count) {
+        return filmStorage.getPopularFilms(count);
+    }
+
     public Collection<Film> getAllFilms() {
         return filmStorage.getAllFilms().values();
     }
 
     public Film addLike(final long userId, final long filmId) {
-        Film film = filmStorage.getFilmById(filmId)
-                .orElseThrow(() -> new ObjectNotFoundException("Film with id " + filmId + " not found"));
+        Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         filmStorage.setLike(userId, filmId);
         log.info("Пользователь с id: {}, поставил лайк на фильм с id: {}", userId, filmId);
@@ -82,8 +94,7 @@ public class FilmService {
     }
 
     public void removeLike(final long userId, final long filmId) {
-        filmStorage.getFilmById(filmId)
-                .orElseThrow(() -> new ObjectNotFoundException("Film with id " + filmId + " not found"));;
+        filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
 
         if(filmStorage.removeLike(userId, filmId)) {
@@ -123,6 +134,12 @@ public class FilmService {
     }
 
     private boolean valid(Film film) {
+        if(film.getMpa() != null && film.getMpa().getId() > COUNT_MPA){
+            throw new ObjectNotFoundException("Не найден рейтинг");
+        }
+        if(film.getGenres() != null && !film.getGenres().stream().filter(genre -> genre.getId() > COUNT_GENRES).toList().isEmpty()){
+            throw new ObjectNotFoundException("Не найден жанр,");
+        }
         return film.getName() != null &&
                 !film.getName().isEmpty() &&
                 film.getDescription().length() <= MAX_LENGTH_DESCRIPTION &&

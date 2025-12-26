@@ -34,7 +34,7 @@ public class UserDbStorage implements UserStorage {
     @Override
     public User getUserById(long userId) {
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User with id " + userId + " not found"));;
+                .orElseThrow(() -> new ObjectNotFoundException("User with id " + userId + " not found"));
         user.setFriends(getFriendsByUser(userId));
         return user;
     }

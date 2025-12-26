@@ -25,7 +25,7 @@ public final class FilmMapper {
             film.setDescription(request.getDescription());
         }
         if (request.hasReleaseDate()) {
-            film.setName(request.getName());
+            film.setReleaseDate(request.getReleaseDate());
         }
         if(request.hasDuration()) {
             film.setDuration(request.getDuration());

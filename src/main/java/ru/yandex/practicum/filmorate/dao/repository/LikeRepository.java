@@ -12,8 +12,8 @@ import java.util.Optional;
 public class LikeRepository extends BaseRepository<LikeDto> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM likes WHERE film_id = ?";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM likes WHERE film_id = ? AND user_id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO likes(film_id, user_id)" +
-            "VALUES (?, ?) returning id";
+    private static final String INSERT_QUERY = "INSERT INTO likes(film_id, user_id) " +
+            "VALUES (?, ?)";
     private static final String COUNT_LIKES_FILM_QUERY = "SELECT COUNT(*) FROM likes GROUP BY film_id";
     private static final String REMOVE_LIKE_QUERY = "DELETE FROM likes WHERE film_id = ? AND user_id = ?";
 

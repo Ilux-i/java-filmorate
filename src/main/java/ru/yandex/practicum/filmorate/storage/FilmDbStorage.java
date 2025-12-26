@@ -4,15 +4,19 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
+import ru.yandex.practicum.filmorate.dao.repository.GenreRepository;
 import ru.yandex.practicum.filmorate.dao.repository.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
+import ru.yandex.practicum.filmorate.dto.like.LikeDto;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.GenreService;
+import ru.yandex.practicum.filmorate.service.MpaService;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmGenreMapper.mapToFilmGenreDto;
 import static ru.yandex.practicum.filmorate.mapper.LikeMapper.mapToLikeDto;
@@ -24,11 +28,17 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRepository filmRepository;
     private final FilmGenreRepository filmGenreRepository;
     private final LikeRepository likeRepository;
+    private final MpaService mpaService;
+    private final GenreService genreService;
 
     // Добавление фильма
     @Override
     public Film addFilm(Film film) {
-        return filmRepository.add(film);
+        Film result = filmRepository.add(film);
+        if(film.getGenres() != null) {
+            film.getGenres().forEach(genre -> addGenreInFilm(result.getId(), genre.getId()));
+        }
+        return result;
     }
 
     // Обновление фильма
@@ -39,8 +49,25 @@ public class FilmDbStorage implements FilmStorage {
 
     // Получение фильма
     @Override
-    public Optional<Film> getFilmById(long filmId) {
-        return filmRepository.findById(filmId);
+    public Film getFilmById(long filmId) {
+        Film film = filmRepository.findById(filmId)
+                .orElseThrow(() -> new ObjectNotFoundException("User with id " + filmId + " not found"));
+        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        film.setGenres(filmGenreRepository.findAllByFilm(filmId).stream()
+                .map(dto -> genreService.getGenre(dto.getGenreId()))
+                .collect(Collectors.toSet())
+        );
+        film.setLikes(likeRepository.findAllByFilm(filmId).stream()
+                .map(LikeDto::getUserId)
+                .collect(Collectors.toSet())
+        );
+        return film;
+    }
+
+    // Получение популярных фильмов
+    @Override
+    public Collection<Film> getPopularFilms(Long count) {
+        return filmRepository.getPopular(count);
     }
 
     // Получение всех фильмов

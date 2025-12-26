@@ -4,8 +4,8 @@ import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.Set;
 
 public interface FilmStorage {
@@ -17,7 +17,10 @@ public interface FilmStorage {
     Film updateFilm(final Film film);
 
     // Получение фильма
-    Optional<Film> getFilmById(long filmId);
+    Film getFilmById(long filmId);
+
+    // Получение популярных фильмов
+    Collection<Film> getPopularFilms(Long count);
 
     // Получение всех фильмов
     HashMap<Long, Film> getAllFilms();
@@ -42,4 +45,5 @@ public interface FilmStorage {
 
     // Удаления лайка
     boolean removeLike(long userId, long filmId);
+
 }

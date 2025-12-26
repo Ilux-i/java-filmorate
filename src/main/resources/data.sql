@@ -1,13 +1,14 @@
 INSERT  INTO  genres(name)
-VALUES ('Comedy'),
-       ('Drama'),
-       ('Thriller'),
-       ('Action'),
-       ('Horror');
+VALUES ('Комедия'),
+       ('Драма'),
+       ('Мультфильм'),
+       ('Триллер'),
+       ('Документальный'),
+       ('Боевик');
 
-INSERT INTO RATING(name)
-VALUES ('0+'),
-        ('6+'),
-        ('12+'),
-        ('16+'),
-        ('18+');
+INSERT INTO MPA(name)
+VALUES ('G'),
+        ('PG'),
+        ('PG-13'),
+        ('R'),
+        ('NC-17');

@@ -4,7 +4,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
-import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,8 +12,8 @@ import java.util.Optional;
 public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM film_genre WHERE film_id = ?";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM film_genre WHERE film_id = ? AND genre_id = ?";
-    private static final String INSERT_QUERY = "INSERT INTO film_genre(film_id, genre_id)" +
-            "VALUES (?, ?) returning id";
+    private static final String INSERT_QUERY = "INSERT INTO film_genre(film_id, genre_id) " +
+            "VALUES (?, ?)";
     private static final String REMOVE_FILM_GENRE_QUERY = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ?";
 
 
