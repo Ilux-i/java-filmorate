@@ -3,9 +3,8 @@ package ru.yandex.practicum.filmorate.model;
 import lombok.*;
 
 import java.time.LocalDate;
-import java.util.HashSet;
-import java.util.Set;
-
+import java.util.HashMap;
+import java.util.Map;
 
 @Builder
 @Data
@@ -17,5 +16,5 @@ public class User {
     private LocalDate birthday;
 
     @Builder.Default
-    private Set<Long> friends = new HashSet<>();
+    private Map<Long, FriendshipStatus> friends = new HashMap<>();
 }

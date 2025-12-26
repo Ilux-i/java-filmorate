@@ -8,7 +8,7 @@ import java.util.HashMap;
 
 @Slf4j
 @Component
-public class InMemoryFilmStorage implements FilmStorage {
+public class InMemoryFilmStorage {
 
     private static HashMap<Long, Film> films = new HashMap<>();
     private static long idCounter = 1;

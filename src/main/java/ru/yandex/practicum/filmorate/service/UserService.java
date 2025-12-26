@@ -4,14 +4,20 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFriendDto;
+import static ru.yandex.practicum.filmorate.mapper.UserMapper.mapToUpdateUserRequest;
+import static ru.yandex.practicum.filmorate.mapper.UserMapper.updateUserFields;
 
 @Slf4j
 @Service
@@ -31,26 +37,17 @@ public class UserService {
     }
 
     public User updateUser(final User user) {
-        HashMap<Long, User> users = userStorage.getAllUsers();
-        if (user.getId() != null && users.containsKey(user.getId())) {
-            User oldUser = users.get(user.getId());
-            if (user.getLogin().isEmpty()) {
-                user.setLogin(oldUser.getLogin());
-            }
-            if (user.getEmail().isEmpty()) {
-                user.setEmail(oldUser.getEmail());
-            }
-            if (user.getName().isEmpty()) {
-                user.setName(oldUser.getName());
-            }
-            if (user.getBirthday() == null) {
-                user.setBirthday(oldUser.getBirthday());
-            }
-            user.setFriends(oldUser.getFriends());
-            if (valid(user)) {
-                return userStorage.updateUser(user);
+        if (user.getId() != null) {
+            User oldUser = userStorage.getUserById(user.getId());
+            UpdateUserRequest updateUser = mapToUpdateUserRequest(user);
+            User result = updateUserFields(oldUser, updateUser);
+            if (valid(result)) {
+                if (!result.getFriends().isEmpty()) {
+                    updateFriends(result.getId(), result.getFriends());
+                }
+                return userStorage.updateUser(result);
             } else {
-                log.warn("User {} not valid when updated", user);
+                log.warn("User {} not valid when updated", result);
                 throw new ValidationException("User no valid");
             }
         } else {
@@ -63,58 +60,50 @@ public class UserService {
         return userStorage.getAllUsers().values();
     }
 
+
     public User addFriend(final long idUser, final long idFriend) {
-        User user = userStorage.getAllUsers().get(idUser);
-        User friend = userStorage.getAllUsers().get(idFriend);
-        if (user != null && friend != null) {
-            user.getFriends()
-                    .add(idFriend);
-            friend.getFriends()
-                    .add(user.getId());
-            log.info("Пользователи с id: {} и {}, теперь являются друзьями", user, friend);
-            return friend;
-        } else {
-            throw new ObjectNotFoundException("Неверны id");
-        }
+        User user = userStorage.getUserById(idUser);
+        userStorage.getUserById(idFriend);
+        long id = userStorage.addFriend(mapToUserPairFriendDto(idUser, idFriend));
+        log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
+        return user;
     }
 
     public void removeFriend(final long idUser, final long idFriend) {
-
-        User friend = userStorage.getAllUsers().get(idFriend);
-        User user = userStorage.getAllUsers().get(idUser);
-        if (user != null && friend != null) {
-            user.getFriends()
-                    .remove(idFriend);
-            friend.getFriends()
-                    .remove(idUser);
-            log.info("Пользователи с id: {} и {}, больше не являются друзьями", user, friend);
-        } else {
-            throw new ObjectNotFoundException("Неверны id");
+        User user = userStorage.getUserById(idUser);
+        userStorage.getUserById(idFriend);
+        if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
+            log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }
     }
 
     public Collection<User> getFriends(final long id) {
-        User user = userStorage.getAllUsers().get(id);
-        if (user == null) {
-            throw new ObjectNotFoundException("Не найден друг с id: " + id);
-        }
-        return user.getFriends().stream()
-                .map(ind -> userStorage.getAllUsers().get(ind))
-                .collect(Collectors.toList());
+        userStorage.getUserById(id);
+        Set<Long> friendIds = userStorage.getFriendsByUser(id).keySet();
+        return friendIds.stream()
+                .map(friendId -> userStorage.getUserById(friendId))
+                .toList();
     }
 
-    public Collection<User> getListOfMutualFriends(final long userId, final long friendId) {
-        User user = userStorage.getAllUsers().get(userId);
-        User friend = userStorage.getAllUsers().get(friendId);
+    private void updateFriends(long userId, Map<Long, FriendshipStatus> friends) {
+        Set<Long> oldFriends = userStorage.getFriendsByUser(userId).keySet();
 
-        if (user == null || friend == null) return Collections.emptyList();
+        Set<Long> toRemove = oldFriends.stream()
+                .filter(friend -> !friends.containsKey(friend))
+                .collect(Collectors.toSet());
 
-        Set<Long> mutualFriends = new HashSet<>(user.getFriends());
-        mutualFriends.retainAll(friend.getFriends());
+        Set<Long> toAdd = friends.keySet().stream()
+                .filter(genre -> !oldFriends.contains(genre))
+                .collect(Collectors.toSet());
 
-        return mutualFriends.stream()
-                .map(id -> userStorage.getAllUsers().get(id))
-                .toList();
+        toRemove.forEach(friend -> userStorage.removeFriend(
+                mapToUserPairFriendDto(userId, friend)));
+        toAdd.forEach(friend -> userStorage.addFriend(
+                mapToUserPairFriendDto(userId, friend)));
+    }
+
+    public long confirmedFriend(final long idUser, final long idFriend) {
+        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
     }
 
     private static boolean valid(User user) {
@@ -125,4 +114,14 @@ public class UserService {
                 user.getBirthday().isBefore(LocalDate.now());
     }
 
+
+    public Collection<User> getListOfMutualFriends(long id, long otherId) {
+        userStorage.getUserById(id);
+        userStorage.getUserById(otherId);
+        Set<Long> friends = userStorage.getFriendsByUser(id).keySet();
+        return userStorage.getFriendsByUser(otherId).keySet().stream()
+                .filter(friends::contains)
+                .map(userStorage::getUserById)
+                .toList();
+    }
 }
