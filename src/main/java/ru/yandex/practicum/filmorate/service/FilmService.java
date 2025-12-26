@@ -59,7 +59,7 @@ public class FilmService {
             UpdateFilmRequest updateFilm = mapToUpdateFilmRequest(film);
             Film result = updateFilmFields(oldFilm, updateFilm);
             if (valid(result)) {
-                if(!result.getGenres().isEmpty()){
+                if (!result.getGenres().isEmpty()) {
                     updateGenres(result.getId(), result.getGenres());
                 }
                 return filmStorage.updateFilm(result);
@@ -97,14 +97,14 @@ public class FilmService {
         filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
 
-        if(filmStorage.removeLike(userId, filmId)) {
+        if (filmStorage.removeLike(userId, filmId)) {
             log.info("Пользователь с id: {}, удалил лайк на фильм с id: {}", userId, filmId);
         } else {
             log.info("Пользователь с id: {}, не ставил лайк на фильм с id: {}", userId, filmId);
         }
     }
 
-    public long getCountLikes(Film film){
+    public long getCountLikes(Film film) {
         return filmStorage.getLikes(film.getId());
     }
 
@@ -134,10 +134,10 @@ public class FilmService {
     }
 
     private boolean valid(Film film) {
-        if(film.getMpa() != null && film.getMpa().getId() > COUNT_MPA){
+        if (film.getMpa() != null && film.getMpa().getId() > COUNT_MPA) {
             throw new ObjectNotFoundException("Не найден рейтинг");
         }
-        if(film.getGenres() != null && !film.getGenres().stream().filter(genre -> genre.getId() > COUNT_GENRES).toList().isEmpty()){
+        if (film.getGenres() != null && !film.getGenres().stream().filter(genre -> genre.getId() > COUNT_GENRES).toList().isEmpty()) {
             throw new ObjectNotFoundException("Не найден жанр,");
         }
         return film.getName() != null &&

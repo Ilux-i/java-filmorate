@@ -42,7 +42,7 @@ public class UserService {
             UpdateUserRequest updateUser = mapToUpdateUserRequest(user);
             User result = updateUserFields(oldUser, updateUser);
             if (valid(result)) {
-                if(!result.getFriends().isEmpty()) {
+                if (!result.getFriends().isEmpty()) {
                     updateFriends(result.getId(), result.getFriends());
                 }
                 return userStorage.updateUser(result);
@@ -102,7 +102,7 @@ public class UserService {
                 mapToUserPairFriendDto(userId, friend)));
     }
 
-    public long confirmedFriend(final long idUser, final long idFriend){
+    public long confirmedFriend(final long idUser, final long idFriend) {
         return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
     }
 

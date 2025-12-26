@@ -25,7 +25,7 @@ public final class UserMapper {
         result.setBirthday(user.getBirthday());
         return result;
     }
-    
+
     public static User updateUserFields(User user, UpdateUserRequest request) {
         if (request.hasEmail()) {
             user.setEmail(request.getEmail());
@@ -36,7 +36,7 @@ public final class UserMapper {
         if (request.hasName()) {
             user.setName(request.getName());
         }
-        if(request.hasBirthday()) {
+        if (request.hasBirthday()) {
             user.setBirthday(request.getBirthday());
         }
 

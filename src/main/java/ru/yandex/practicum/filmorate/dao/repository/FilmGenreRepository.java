@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Repository
 public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM film_genre WHERE film_id = ?";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM film_genre WHERE film_id = ? order by genre_id";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM film_genre WHERE film_id = ? AND genre_id = ?";
     private static final String INSERT_QUERY = "INSERT INTO film_genre(film_id, genre_id) " +
             "VALUES (?, ?)";

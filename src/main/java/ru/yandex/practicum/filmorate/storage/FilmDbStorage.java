@@ -4,14 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
-import ru.yandex.practicum.filmorate.dao.repository.GenreRepository;
 import ru.yandex.practicum.filmorate.dao.repository.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
@@ -35,7 +33,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film addFilm(Film film) {
         Film result = filmRepository.add(film);
-        if(film.getGenres() != null) {
+        if (film.getGenres() != null) {
             film.getGenres().forEach(genre -> addGenreInFilm(result.getId(), genre.getId()));
         }
         return result;
@@ -111,19 +109,19 @@ public class FilmDbStorage implements FilmStorage {
 
     // Поставить лайк
     @Override
-    public void setLike(long userId, long filmId){
+    public void setLike(long userId, long filmId) {
         likeRepository.add(mapToLikeDto(userId, filmId));
     }
 
     // Получение количества лайков
     @Override
-    public long getLikes(long filmId){
+    public long getLikes(long filmId) {
         return likeRepository.countLikesByFilmId(filmId);
     }
 
     // Удаления лайка
     @Override
-    public boolean removeLike(long userId, long filmId){
+    public boolean removeLike(long userId, long filmId) {
         return likeRepository.remove(userId, filmId);
     }
 

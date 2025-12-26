@@ -14,23 +14,23 @@ public class UpdateFilmRequest {
     private Mpa rating;
 
     public boolean hasName() {
-        return ! (name == null || name.isBlank());
+        return !(name == null || name.isBlank());
     }
 
     public boolean hasDescription() {
-        return ! (description == null || description.isBlank());
+        return !(description == null || description.isBlank());
     }
 
     public boolean hasReleaseDate() {
-        return ! (releaseDate == null);
+        return !(releaseDate == null);
     }
 
     public boolean hasDuration() {
-        return ! (duration == null || description.isBlank());
+        return !(duration == null || description.isBlank());
     }
 
     public boolean hasRating() {
-        return ! (rating == null);
+        return !(rating == null);
     }
 
 }

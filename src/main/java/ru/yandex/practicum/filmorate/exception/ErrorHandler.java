@@ -28,8 +28,6 @@ public class ErrorHandler {
         );
     }
 
-    // Добавить обработку InternalServerException
-
     @ExceptionHandler
     public ErrorResponse handleOtherException(final Throwable e) {
         log.warn(e.getMessage(), e);

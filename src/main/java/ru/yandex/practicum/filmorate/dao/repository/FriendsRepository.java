@@ -20,8 +20,8 @@ public class FriendsRepository extends BaseRepository<FriendDto> {
             "SELECT * " +
                     "FROM friends " +
                     "WHERE " +
-                        "friend_id = ? " +
-                        "AND status = ?";
+                    "friend_id = ? " +
+                    "AND status = ?";
     private static final String INSERT_QUERY = "INSERT INTO friends(user_id, friend_id, status) " +
             "VALUES (?, ?, ?)";
     private static final String CONFIRM_FRIEND_QUERY = "UPDATE friends SET status = " + FriendshipStatus.CONFIRMED +
