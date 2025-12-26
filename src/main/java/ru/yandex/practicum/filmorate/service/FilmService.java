@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -104,15 +105,17 @@ public class FilmService {
         }
     }
 
-    private void updateGenres(long filmId, Set<Long> genres) {
-        Set<Long> oldGenres = filmStorage.getGenresByFilm(filmId);
+    private void updateGenres(long filmId, Set<Genre> genres) {
+        Set<Genre> oldGenres = filmStorage.getGenresByFilm(filmId);
 
         Set<Long> toRemove = oldGenres.stream()
                 .filter(genre -> !genres.contains(genre))
+                .map(Genre::getId)
                 .collect(Collectors.toSet());
 
         Set<Long> toAdd = genres.stream()
                 .filter(genre -> !oldGenres.contains(genre))
+                .map(Genre::getId)
                 .collect(Collectors.toSet());
 
         toRemove.forEach(genre -> filmStorage.removeGenreInFilm(filmId, genre));

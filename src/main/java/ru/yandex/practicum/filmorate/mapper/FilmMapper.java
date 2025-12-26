@@ -13,7 +13,7 @@ public final class FilmMapper {
         result.setDescription(film.getDescription());
         result.setReleaseDate(film.getReleaseDate());
         result.setDuration(film.getDuration());
-        result.setRatingId(film.getRatingId());
+        result.setRating(film.getMpa());
         return result;
     }
 
@@ -31,7 +31,7 @@ public final class FilmMapper {
             film.setDuration(request.getDuration());
         }
         if (request.hasRating()) {
-            film.setRatingId(request.getRatingId());
+            film.setMpa(request.getRating());
         }
         return film;
     }

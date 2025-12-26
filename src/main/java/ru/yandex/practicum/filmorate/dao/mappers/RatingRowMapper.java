@@ -2,18 +2,18 @@ package ru.yandex.practicum.filmorate.dao.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dto.raing.RatingDto;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
-public class RatingRowMapper implements RowMapper<RatingDto> {
+public class RatingRowMapper implements RowMapper<Mpa> {
     @Override
-    public RatingDto mapRow(ResultSet rs, int rowNum) throws SQLException {
-        RatingDto dto = new RatingDto();
-        dto.setId(rs.getInt("id"));
-        dto.setName(rs.getString("name"));
-        return dto;
+    public Mpa mapRow(ResultSet rs, int rowNum) throws SQLException {
+        return Mpa.builder()
+                .id(rs.getInt("id"))
+                .name(rs.getString("name"))
+                .build();
     }
 }

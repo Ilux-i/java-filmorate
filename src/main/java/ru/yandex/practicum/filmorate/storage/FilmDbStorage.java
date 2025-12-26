@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.repository.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,8 +28,6 @@ public class FilmDbStorage implements FilmStorage {
     // Добавление фильма
     @Override
     public Film addFilm(Film film) {
-        film.getGenres()
-                .forEach(genreId -> removeGenreInFilm(film.getId(), genreId));
         return filmRepository.add(film);
     }
 
@@ -64,9 +63,9 @@ public class FilmDbStorage implements FilmStorage {
 
     // Получение списка жанров по фильму
     @Override
-    public Set<Long> getGenresByFilm(long filmId) {
-        Set<Long> result = new HashSet<>();
-        filmGenreRepository.findAllByFilm(filmId).forEach(dto -> result.add(dto.getGenreId()));
+    public Set<Genre> getGenresByFilm(long filmId) {
+        Set<Genre> result = new HashSet<>();
+        filmGenreRepository.findAllByFilm(filmId).forEach(dto -> result.add(Genre.builder().id(dto.getGenreId()).build()));
         return result;
     }
 

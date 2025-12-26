@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.dto.film;
 
 import lombok.Data;
+import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 
@@ -10,7 +11,7 @@ public class UpdateFilmRequest {
     private String description;
     private LocalDate releaseDate;
     private Integer duration;
-    private Long ratingId;
+    private Mpa rating;
 
     public boolean hasName() {
         return ! (name == null || name.isBlank());
@@ -29,7 +30,7 @@ public class UpdateFilmRequest {
     }
 
     public boolean hasRating() {
-        return ! (ratingId == null);
+        return ! (rating == null);
     }
 
 }

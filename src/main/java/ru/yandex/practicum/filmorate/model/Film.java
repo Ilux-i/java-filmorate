@@ -15,12 +15,12 @@ public class Film {
     private String description;
     private LocalDate releaseDate;
     private Integer duration;
-    private long ratingId;
+    private Mpa mpa;
 
     @Builder.Default
     private Set<Long> likes = new HashSet<>();
 
     @Builder.Default
-    private Set<Long> genres = new HashSet<>();
+    private Set<Genre> genres = new HashSet<>();
 }
 
