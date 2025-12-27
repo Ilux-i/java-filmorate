@@ -6,5 +6,5 @@ import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 @Data
 public class FriendDto {
     private long id;
-    FriendshipStatus status;
+    private FriendshipStatus status;
 }

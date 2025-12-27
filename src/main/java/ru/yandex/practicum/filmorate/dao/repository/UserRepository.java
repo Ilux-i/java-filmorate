@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ import java.util.Optional;
 public class UserRepository extends BaseRepository<User> {
     private static final String FIND_ALL_QUERY = "SELECT * FROM users";
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
+    private static final String FIND_BY_LIST_ID_TEMPLATE = "SELECT * FROM users WHERE id in (%s)";
     private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) " +
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
@@ -30,6 +32,14 @@ public class UserRepository extends BaseRepository<User> {
 
     public Optional<User> findById(long userId) {
         return findOne(FIND_BY_ID_QUERY, userId);
+    }
+
+    public List<User> findUserByListId(List<Long> idUsers) {
+        String placeholders = String.join(",",
+                Collections.nCopies(idUsers.size(), "?"));
+        return findMany(
+                String.format(FIND_BY_LIST_ID_TEMPLATE, placeholders),
+                idUsers.toArray());
     }
 
     public User add(User user) {

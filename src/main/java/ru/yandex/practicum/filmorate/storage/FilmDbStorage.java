@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 import static ru.yandex.practicum.filmorate.mapper.FilmGenreMapper.mapToFilmGenreDto;
 import static ru.yandex.practicum.filmorate.mapper.LikeMapper.mapToLikeDto;
 
+
 @Component("FilmDbStorage")
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
@@ -100,12 +101,22 @@ public class FilmDbStorage implements FilmStorage {
         return filmGenreRepository.add(mapToFilmGenreDto(filmId, genreId));
     }
 
+    @Override
+    public List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds) {
+        return filmGenreRepository.addGenresToFilm(filmId, genreIds);
+    }
+
     // Удаление жанра из фильма
     @Override
     public boolean removeGenreInFilm(long filmId, long genreId) {
         return filmGenreRepository.remove(filmId, genreId);
     }
 
+    // Удаление жанров из фильма
+    @Override
+    public boolean removeGenresInFilm(long filmId, List<Long> genresId) {
+        return filmGenreRepository.removeGenres(filmId, genresId);
+    }
 
     // Поставить лайк
     @Override

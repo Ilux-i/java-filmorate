@@ -1,12 +1,11 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.model.Film;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FilmMapper {
+@UtilityClass
+public class FilmMapper {
     public static UpdateFilmRequest mapToUpdateFilmRequest(Film film) {
         UpdateFilmRequest result = new UpdateFilmRequest();
         result.setName(film.getName());

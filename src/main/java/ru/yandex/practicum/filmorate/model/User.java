@@ -4,7 +4,6 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.Map;
 
 @Builder
 @Data
@@ -16,5 +15,5 @@ public class User {
     private LocalDate birthday;
 
     @Builder.Default
-    private Map<Long, FriendshipStatus> friends = new HashMap<>();
+    private HashMap<Long, FriendshipStatus> friends = new HashMap<>();
 }

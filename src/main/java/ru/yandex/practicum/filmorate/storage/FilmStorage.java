@@ -6,6 +6,7 @@ import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 
 public interface FilmStorage {
@@ -34,8 +35,13 @@ public interface FilmStorage {
     // Добавление жанра к фильму
     FilmGenreDto addGenreInFilm(long filmId, long genreId);
 
+    List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds);
+
     // Удаление жанра из фильма
     boolean removeGenreInFilm(long filmId, long genreId);
+
+    // Удаление жанров из фильма
+    boolean removeGenresInFilm(long filmId, List<Long> genresId);
 
     // Поставить лайк
     void setLike(long userId, long filmId);

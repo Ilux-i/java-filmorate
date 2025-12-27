@@ -2,7 +2,6 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.RatingRepository;
@@ -17,13 +16,14 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.mapToUpdateFilmRequest;
 import static ru.yandex.practicum.filmorate.mapper.FilmMapper.updateFilmFields;
 
-// добавить удаление фильмов
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -35,13 +35,10 @@ public class FilmService {
     private static final Integer COUNT_MPA = 5;
 
 
-    @Autowired
     @Qualifier("FilmDbStorage")
     private final FilmStorage filmStorage;
-    @Autowired
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
-    @Autowired
     private RatingRepository ratingRepository;
 
     public Film addFilm(final Film film) {
@@ -119,18 +116,18 @@ public class FilmService {
     private void updateGenres(long filmId, Set<Genre> genres) {
         Set<Genre> oldGenres = filmStorage.getGenresByFilm(filmId);
 
-        Set<Long> toRemove = oldGenres.stream()
+        List<Long> toRemove = oldGenres.stream()
                 .filter(genre -> !genres.contains(genre))
                 .map(Genre::getId)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
-        Set<Long> toAdd = genres.stream()
+        List<Long> toAdd = genres.stream()
                 .filter(genre -> !oldGenres.contains(genre))
                 .map(Genre::getId)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
 
-        toRemove.forEach(genre -> filmStorage.removeGenreInFilm(filmId, genre));
-        toAdd.forEach(genre -> filmStorage.addGenreInFilm(filmId, genre));
+        filmStorage.removeGenresInFilm(filmId, toRemove);
+        filmStorage.addGenresToFilm(filmId, toAdd);
     }
 
     private boolean valid(Film film) {

@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class FilmGenreMapper {
+@UtilityClass
+public class FilmGenreMapper {
     public static FilmGenreDto mapToFilmGenreDto(long filmId, long genreId) {
         FilmGenreDto dto = new FilmGenreDto();
         dto.setFilmId(filmId);

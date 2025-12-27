@@ -1,11 +1,10 @@
 package ru.yandex.practicum.filmorate.mapper;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import lombok.experimental.UtilityClass;
 import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class LikeMapper {
+@UtilityClass
+public class LikeMapper {
     public static LikeDto mapToLikeDto(long userId, long filmId) {
         LikeDto dto = new LikeDto();
         dto.setUserId(userId);

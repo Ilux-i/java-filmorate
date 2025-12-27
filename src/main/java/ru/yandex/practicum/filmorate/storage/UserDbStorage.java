@@ -4,12 +4,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
 import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
+import ru.yandex.practicum.filmorate.dto.friend.AllFriendDto;
 import ru.yandex.practicum.filmorate.dto.friend.PairFriendDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
-import java.util.HashMap;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFriendDto;
 
 @Component("UserDbStorage")
 @RequiredArgsConstructor
@@ -39,6 +43,45 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
+    // Получение списка пользователей по списку userId
+    @Override
+    public List<User> getUsersByListId(List<Long> usersId) {
+        List<User> users = userRepository.findUserByListId(usersId);
+        if (users.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Long> userIds = users.stream()
+                .map(User::getId)
+                .collect(Collectors.toList());
+
+        List<PairFriendDto> allFriends = friendsRepository
+                .findFriendsByListId(userIds)
+                .stream()
+                .map(dto -> mapToUserPairFriendDto(dto.getUserId(), dto.getFriendId()))
+                .toList();
+
+        Map<Long, Set<Long>> friendsByUserId = allFriends.stream()
+                .collect(Collectors.groupingBy(
+                        PairFriendDto::getUserId,
+                        Collectors.mapping(PairFriendDto::getFriendId, Collectors.toSet())
+                ));
+
+        users.forEach(user -> {
+            Set<Long> friendIds = friendsByUserId.getOrDefault(user.getId(), Collections.emptySet());
+            HashMap<Long, FriendshipStatus> friendsMap = friendIds.stream()
+                    .collect(Collectors.toMap(
+                            friendId -> friendId,
+                            friendId -> FriendshipStatus.CONFIRMED,
+                            (existing, replacement) -> existing,
+                            HashMap::new
+                    ));
+            user.setFriends(friendsMap);
+        });
+
+        return users;
+    }
+
     // Получение всех пользователей
     @Override
     public HashMap<Long, User> getAllUsers() {
@@ -58,7 +101,7 @@ public class UserDbStorage implements UserStorage {
 
     // Добавление в друзья
     @Override
-    public long addFriend(PairFriendDto dto) {
+    public long addFriend(AllFriendDto dto) {
         return friendsRepository.addFriend(dto);
     }
 
@@ -73,16 +116,16 @@ public class UserDbStorage implements UserStorage {
     public HashMap<Long, FriendshipStatus> getFriendsByUser(long userId) {
         HashMap<Long, FriendshipStatus> result = new HashMap<>();
         friendsRepository.findFriendsByUserId(userId)
-                .forEach(friendDto -> result.put(friendDto.getId(), friendDto.getStatus()));
+                .forEach(dto -> result.put(dto.getFriendId(), FriendshipStatus.CONFIRMED));
         return result;
     }
 
     // Получение запросов в друзья
     @Override
-    public HashMap<Long, FriendshipStatus> getFriendRequestsByUser(User user) {
-        HashMap<Long, FriendshipStatus> result = new HashMap<>();
+    public HashSet<Long> getFriendRequestsByUser(User user) {
+        HashSet<Long> result = new HashSet<>();
         friendsRepository.findFriendRequestsByUserId(user.getId())
-                .forEach(friendDto -> result.put(friendDto.getId(), friendDto.getStatus()));
+                .forEach(friendDto -> result.add(friendDto.getFriendId()));
         return result;
     }
 

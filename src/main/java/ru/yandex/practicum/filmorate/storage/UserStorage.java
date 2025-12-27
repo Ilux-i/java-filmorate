@@ -1,10 +1,13 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.dto.friend.AllFriendDto;
 import ru.yandex.practicum.filmorate.dto.friend.PairFriendDto;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 
 public interface UserStorage {
 
@@ -14,12 +17,15 @@ public interface UserStorage {
 
     User getUserById(long userId);
 
+    // Получение списка пользоватеелеей по списку userId
+    List<User> getUsersByListId(List<Long> usersId);
+
     HashMap<Long, User> getAllUsers();
 
     // Удаление пользователя
     boolean removeUser(User user);
 
-    long addFriend(PairFriendDto dto);
+    long addFriend(AllFriendDto dto);
 
     // Подтверждение запроса в друзья
     long confirmedFriend(PairFriendDto dto);
@@ -28,7 +34,7 @@ public interface UserStorage {
     HashMap<Long, FriendshipStatus> getFriendsByUser(long userId);
 
     // Получение запросов в друзья
-    HashMap<Long, FriendshipStatus> getFriendRequestsByUser(User user);
+    HashSet<Long> getFriendRequestsByUser(User user);
 
     // Удаление друга
     boolean removeFriend(PairFriendDto dto);
