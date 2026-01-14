@@ -20,7 +20,6 @@ public class FilmRepository extends BaseRepository<Film> {
             "SET name = ?, description = ?, releaseDate = ?, duration = ?, rating_id = ? " +
             "WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
-
     private static final String FIND_POPULAR_FILM_QUERY = "select f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
             "from FILMS as f " +
             "right join LIKES as l on f.ID = l.FILM_ID " +
@@ -32,14 +31,17 @@ public class FilmRepository extends BaseRepository<Film> {
         super(jdbc, mapper);
     }
 
+    // Получение  всех фильмов
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
 
+    // Получение фильма по id
     public Optional<Film> findById(long filmId) {
         return findOne(FIND_BY_ID_QUERY, filmId);
     }
 
+    // Добавление фильма
     public Film add(Film film) {
         long id = insert(
                 INSERT_QUERY,
@@ -53,6 +55,7 @@ public class FilmRepository extends BaseRepository<Film> {
         return film;
     }
 
+    // Обновление фильма
     public Film update(Film film) {
         update(
                 UPDATE_QUERY,
@@ -66,6 +69,7 @@ public class FilmRepository extends BaseRepository<Film> {
         return film;
     }
 
+    // Получение популярных фильмов, судя по лайкам
     public Collection<Film> getPopular(long count) {
         return findMany(
                 FIND_POPULAR_FILM_QUERY,
@@ -73,6 +77,7 @@ public class FilmRepository extends BaseRepository<Film> {
         );
     }
 
+    // Удаление фильма по id
     public boolean remove(long filmId) {
         return delete(DELETE_QUERY, filmId);
     }

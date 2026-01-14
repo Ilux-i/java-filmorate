@@ -16,11 +16,14 @@ public class MpaController {
 
     private final MpaService mpaService;
 
-    @GetMapping("/{id}")
-    public Mpa getMpa(@PathVariable final long id) {
-        return mpaService.getMpa(id);
+    // Получение рейтинга по его id
+    @GetMapping("/{mpaId}")
+    public Mpa getMpa(@PathVariable final long mpaId) {
+        return mpaService.getMpa(mpaId);
     }
 
+
+    // Получение всех возможных рейтингов
     @GetMapping
     public Collection<Mpa> getAllMpa() {
         return mpaService.getAll();

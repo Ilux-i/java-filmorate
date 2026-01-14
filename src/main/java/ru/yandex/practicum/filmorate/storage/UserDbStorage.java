@@ -39,6 +39,7 @@ public class UserDbStorage implements UserStorage {
     public User getUserById(long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User with id " + userId + " not found"));
+        // Заполнение списка id друзей
         user.setFriends(getFriendsByUser(userId));
         return user;
     }
@@ -51,22 +52,26 @@ public class UserDbStorage implements UserStorage {
             return Collections.emptyList();
         }
 
+        // Получение списка id пользователей
         List<Long> userIds = users.stream()
                 .map(User::getId)
                 .collect(Collectors.toList());
 
+        // Получение списка связей пользователь-друг по списку id пользователей
         List<PairFriendDto> allFriends = friendsRepository
                 .findFriendsByListId(userIds)
                 .stream()
                 .map(dto -> mapToUserPairFriendDto(dto.getUserId(), dto.getFriendId()))
                 .toList();
 
+        // Расфасовка id друзей по id пользователям
         Map<Long, Set<Long>> friendsByUserId = allFriends.stream()
                 .collect(Collectors.groupingBy(
                         PairFriendDto::getUserId,
                         Collectors.mapping(PairFriendDto::getFriendId, Collectors.toSet())
                 ));
 
+        // Вставка вместо id друзей сущность пользователя по id
         users.forEach(user -> {
             Set<Long> friendIds = friendsByUserId.getOrDefault(user.getId(), Collections.emptySet());
             HashMap<Long, FriendshipStatus> friendsMap = friendIds.stream()
@@ -105,11 +110,11 @@ public class UserDbStorage implements UserStorage {
         return friendsRepository.addFriend(dto);
     }
 
-    // Подтверждение запроса в друзья
-    @Override
-    public long confirmedFriend(PairFriendDto dto) {
-        return friendsRepository.confirmFriend(dto);
-    }
+//    // Подтверждение запроса в друзья
+//    @Override
+//    public long confirmedFriend(PairFriendDto dto) {
+//        return friendsRepository.confirmFriend(dto);
+//    }
 
     // Получения друзей
     @Override
@@ -120,14 +125,14 @@ public class UserDbStorage implements UserStorage {
         return result;
     }
 
-    // Получение запросов в друзья
-    @Override
-    public HashSet<Long> getFriendRequestsByUser(User user) {
-        HashSet<Long> result = new HashSet<>();
-        friendsRepository.findFriendRequestsByUserId(user.getId())
-                .forEach(friendDto -> result.add(friendDto.getFriendId()));
-        return result;
-    }
+//    // Получение запросов в друзья
+//    @Override
+//    public HashSet<Long> getFriendRequestsByUser(User user) {
+//        HashSet<Long> result = new HashSet<>();
+//        friendsRepository.findFriendRequestsByUserId(user.getId())
+//                .forEach(friendDto -> result.add(friendDto.getFriendId()));
+//        return result;
+//    }
 
     // Удаление друга
     @Override

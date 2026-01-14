@@ -19,11 +19,13 @@ public class MpaService {
     @Autowired
     private RatingRepository ratingRepository;
 
-    public Mpa getMpa(long id) {
-        return ratingRepository.findById(id)
+    // Получение рейтинга
+    public Mpa getMpa(long mpaId) {
+        return ratingRepository.findById(mpaId)
                 .orElseThrow(() -> new ObjectNotFoundException("В бд нет такого рейтинга"));
     }
 
+    // Получение всех возможных рейтингов
     public Collection<Mpa> getAll() {
         return ratingRepository.findAll();
     }

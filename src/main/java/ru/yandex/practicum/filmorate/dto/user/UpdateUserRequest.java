@@ -4,12 +4,15 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+// DTO с данными обновления пользователя
 @Data
 public class UpdateUserRequest {
     private String email;
     private String login;
     private String name;
     private LocalDate birthday;
+
+    // Проверки на пустоту
 
     public boolean hasName() {
         return !(name == null || name.isBlank());

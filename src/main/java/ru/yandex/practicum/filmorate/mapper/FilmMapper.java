@@ -16,6 +16,7 @@ public class FilmMapper {
         return result;
     }
 
+    // Получение фильма из старых и обновлённый данных
     public static Film updateFilmFields(Film film, UpdateFilmRequest request) {
         if (request.hasName()) {
             film.setName(request.getName());

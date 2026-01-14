@@ -16,36 +16,43 @@ public class UserController {
 
     private final UserService userService;
 
+    // Добавления пользователя
     @PostMapping
     public User addUser(@RequestBody final User user) {
         return userService.addUser(user);
     }
 
+    // Обновление пользователя
     @PutMapping
     public User updateUser(@RequestBody final User user) {
         return userService.updateUser(user);
     }
 
+    // Добавление в друзья
     @PutMapping("/{id}/friends/{friendId}")
     public User addFriends(@PathVariable final long id, @PathVariable final long friendId) {
         return userService.addFriend(id, friendId);
     }
 
+    // Получение всех пользователей
     @GetMapping
     public Collection<User> getAllUsers() {
         return userService.getAllUsers();
     }
 
+    // Получение всех друзей пользователя
     @GetMapping("/{id}/friends")
     public Collection<User> getFriends(@PathVariable final long id) {
         return userService.getFriends(id);
     }
 
+    // Получение общих друзей двух пользователей
     @GetMapping("/{id}/friends/common/{otherId}")
     public Collection<User> getMutualFriends(@PathVariable final long id, @PathVariable final long otherId) {
         return userService.getListOfMutualFriends(id, otherId);
     }
 
+    // Разрыв дружеской связи между двумя пользователями
     @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(@PathVariable long id, @PathVariable long friendId) {
         userService.removeFriend(id, friendId);

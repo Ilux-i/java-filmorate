@@ -30,11 +30,12 @@ public class UserService {
     private final UserStorage userStorage;
     @Autowired
     private FriendsRepository friendsRepository;
-    @Autowired
-    private UserRepository userRepository;
 
+    // Добавление пользователя
     public User addUser(final User user) {
+        // Проверка валидации
         if (valid(user)) {
+            // Добавление
             User result = userStorage.addUser(user);
             if (result != null) {
                 log.info("User added: {}", result);
@@ -48,11 +49,16 @@ public class UserService {
         }
     }
 
+    // Обновление пользователя
     public User updateUser(final User user) {
         if (user.getId() != null) {
+            // Старые данные пользователя
             User oldUser = userStorage.getUserById(user.getId());
+            // Новые данные пользователя
             UpdateUserRequest updateUser = UserMapper.mapToUpdateUserRequest(user);
+            // Обновлённые данные пользователя
             User result = UserMapper.updateUserFields(oldUser, updateUser);
+            // Проверка валидации
             if (valid(result)) {
                 if (!result.getFriends().isEmpty()) {
                     updateFriends(result.getId(), result.getFriends());
@@ -68,11 +74,12 @@ public class UserService {
         }
     }
 
+    // Получение всех пользователей
     public Collection<User> getAllUsers() {
         return userStorage.getAllUsers().values();
     }
 
-
+    // Добавление друга
     public User addFriend(final long idUser, final long idFriend) {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
@@ -81,6 +88,7 @@ public class UserService {
         return user;
     }
 
+    // Удаление друга
     public void removeFriend(final long idUser, final long idFriend) {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
@@ -89,19 +97,24 @@ public class UserService {
         }
     }
 
+    // Получение списка друзей
     public Collection<User> getFriends(final long id) {
         userStorage.getUserById(id);
         List<Long> friendIds = userStorage.getFriendsByUser(id).keySet().stream().toList();
         return userStorage.getUsersByListId(friendIds);
     }
 
+    // Обновление списка друзей
     private void updateFriends(long userId, HashMap<Long, FriendshipStatus> friends) {
+        // Старый список друзей
         Set<Long> oldFriends = userStorage.getFriendsByUser(userId).keySet();
 
+        // Список друзей на удаление
         Set<Long> toRemove = oldFriends.stream()
                 .filter(friend -> !friends.containsKey(friend))
                 .collect(Collectors.toSet());
 
+        // Список друзей на добавление
         Set<Long> toAdd = friends.keySet().stream()
                 .filter(genre -> !oldFriends.contains(genre))
                 .collect(Collectors.toSet());
@@ -110,9 +123,10 @@ public class UserService {
         friendsRepository.addFriendsByListId(toAdd.stream().map(friend -> mapToUserPairFriendDto(userId, friend)).toList());
     }
 
-    public long confirmedFriend(final long idUser, final long idFriend) {
-        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
-    }
+//    // Подтверждение запроса добавления в друзья
+//    public long confirmedFriend(final long idUser, final long idFriend) {
+//        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
+//    }
 
     private static boolean valid(User user) {
         return !user.getEmail().isEmpty() &&
@@ -122,7 +136,7 @@ public class UserService {
                 user.getBirthday().isBefore(LocalDate.now());
     }
 
-
+    // Получение списка общих друзей между двумя пользователями
     public Collection<User> getListOfMutualFriends(long id, long otherId) {
         userStorage.getUserById(id);
         userStorage.getUserById(otherId);

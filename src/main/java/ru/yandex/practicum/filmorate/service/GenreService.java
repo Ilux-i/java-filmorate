@@ -18,11 +18,13 @@ public class GenreService {
     @Autowired
     private GenreRepository genreRepository;
 
-    public Genre getGenre(long id) {
-        return genreRepository.findById(id)
+    // Получение жанра по id
+    public Genre getGenre(long genreId) {
+        return genreRepository.findById(genreId)
                 .orElseThrow(() -> new ObjectNotFoundException("В бд нет такого жанра"));
     }
 
+    // Получение всех возможных жанров
     public Collection<Genre> getAll() {
         return genreRepository.findAll();
     }

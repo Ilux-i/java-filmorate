@@ -39,9 +39,10 @@ public class FilmService {
     private final FilmStorage filmStorage;
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
-    private RatingRepository ratingRepository;
 
+    // Добавление фильма
     public Film addFilm(final Film film) {
+        // Проверка на валидацию
         if (valid(film)) {
             return filmStorage.addFilm(film);
         } else {
@@ -50,11 +51,16 @@ public class FilmService {
         }
     }
 
+    // Обновление фильма
     public Film updateFilm(final Film film) {
         if (film.getId() != null) {
+            // Старые данные фильма
             Film oldFilm = filmStorage.getFilmById(film.getId());
+            // Обновлённые данные фильма
             UpdateFilmRequest updateFilm = mapToUpdateFilmRequest(film);
+            // Фильм из старых и обновлённый данных
             Film result = updateFilmFields(oldFilm, updateFilm);
+            // Вальдация
             if (valid(result)) {
                 if (!result.getGenres().isEmpty()) {
                     updateGenres(result.getId(), result.getGenres());
@@ -70,18 +76,22 @@ public class FilmService {
         }
     }
 
+    // Получение фильма по id
     public Film getFilmById(final long id) {
         return filmStorage.getFilmById(id);
     }
 
+    // Получение популярных фильмов
     public Collection<Film> getPopularFilms(Long count) {
         return filmStorage.getPopularFilms(count);
     }
 
+    // Получение всех фильмов
     public Collection<Film> getAllFilms() {
         return filmStorage.getAllFilms().values();
     }
 
+    // Добавление лайкка к фильму
     public Film addLike(final long userId, final long filmId) {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
@@ -90,6 +100,7 @@ public class FilmService {
         return film;
     }
 
+    // Удаление лайка к фильму
     public void removeLike(final long userId, final long filmId) {
         filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
@@ -101,10 +112,12 @@ public class FilmService {
         }
     }
 
+    // Получение количества лайков
     public long getCountLikes(Film film) {
         return filmStorage.getLikes(film.getId());
     }
 
+    // Добавление жанра к фильму
     public void addGenreInFilm(long filmId, long genreId) {
         try {
             filmStorage.addGenreInFilm(filmId, genreId);
@@ -113,14 +126,18 @@ public class FilmService {
         }
     }
 
+    // Обновление списка жанров к фильму
     private void updateGenres(long filmId, Set<Genre> genres) {
+        // Старые жанры
         Set<Genre> oldGenres = filmStorage.getGenresByFilm(filmId);
 
+        // Жанры, которые надо удалить
         List<Long> toRemove = oldGenres.stream()
                 .filter(genre -> !genres.contains(genre))
                 .map(Genre::getId)
                 .collect(Collectors.toList());
 
+        // Жанры, которые надо добавить
         List<Long> toAdd = genres.stream()
                 .filter(genre -> !oldGenres.contains(genre))
                 .map(Genre::getId)
@@ -130,6 +147,7 @@ public class FilmService {
         filmStorage.addGenresToFilm(filmId, toAdd);
     }
 
+    // Валидация
     private boolean valid(Film film) {
         if (film.getMpa() != null && film.getMpa().getId() > COUNT_MPA) {
             throw new ObjectNotFoundException("Не найден рейтинг");

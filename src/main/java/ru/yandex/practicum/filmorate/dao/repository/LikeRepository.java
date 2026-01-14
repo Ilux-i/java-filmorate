@@ -21,14 +21,17 @@ public class LikeRepository extends BaseRepository<LikeDto> {
         super(jdbc, mapper);
     }
 
+    // Получение всех лайков по фильму
     public List<LikeDto> findAllByFilm(long filmId) {
         return findMany(FIND_ALL_QUERY, filmId);
     }
 
+    // Получение одного лайка по пользователю и фильму
     public Optional<LikeDto> findById(long filmId, long userId) {
         return findOne(FIND_BY_ID_QUERY, filmId, userId);
     }
 
+    // Добавление лайка к фильму
     public LikeDto add(LikeDto dto) {
         long id = insert(
                 INSERT_QUERY,
@@ -39,10 +42,12 @@ public class LikeRepository extends BaseRepository<LikeDto> {
         return dto;
     }
 
+    // Получение количества лайков по id фильма
     public long countLikesByFilmId(long filmId) {
         return jdbc.queryForObject(COUNT_LIKES_FILM_QUERY, Long.class, filmId);
     }
 
+    // Удаление лайка по id фильма и пользователя
     public boolean remove(long filmId, long userId) {
         return jdbc.update(REMOVE_LIKE_QUERY, filmId, userId) > 0;
     }

@@ -16,11 +16,13 @@ public class GenreController {
 
     private final GenreService genreService;
 
-    @GetMapping("/{id}")
-    public Genre addFilm(@PathVariable final long id) {
-        return genreService.getGenre(id);
+    // Получение жанра по его id
+    @GetMapping("/{genreId}")
+    public Genre getGenre(@PathVariable final long genreId) {
+        return genreService.getGenre(genreId);
     }
 
+    // Получение всех жанров
     @GetMapping
     public Collection<Genre> getAllGenre() {
         return genreService.getAll();

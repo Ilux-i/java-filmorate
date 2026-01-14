@@ -17,11 +17,14 @@ public class RatingRepository extends BaseRepository<Mpa> {
         super(jdbc, mapper);
     }
 
+    // Получение рейтинга по id
     public Optional<Mpa> findById(long ratingId) {
         return findOne(FIND_BY_ID_QUERY, ratingId);
     }
 
+    // Получение списка всех рейтингов
     public List<Mpa> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
+
 }

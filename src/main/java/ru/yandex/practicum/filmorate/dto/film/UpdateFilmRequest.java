@@ -5,6 +5,7 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.time.LocalDate;
 
+// DTO с данными на обновление фильма
 @Data
 public class UpdateFilmRequest {
     private String name;

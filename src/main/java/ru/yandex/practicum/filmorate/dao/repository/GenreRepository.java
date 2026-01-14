@@ -17,10 +17,12 @@ public class GenreRepository extends BaseRepository<Genre> {
         super(jdbc, mapper);
     }
 
+    // Получение жанра по id
     public Optional<Genre> findById(long genreId) {
         return findOne(FIND_BY_ID_QUERY, genreId);
     }
 
+    // Получение всех возможных жанров
     public List<Genre> findAll() {
         return findMany(FIND_ALL_QUERY);
     }

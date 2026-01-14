@@ -6,7 +6,6 @@ import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 public interface UserStorage {
@@ -27,14 +26,14 @@ public interface UserStorage {
 
     long addFriend(AllFriendDto dto);
 
-    // Подтверждение запроса в друзья
-    long confirmedFriend(PairFriendDto dto);
+//    // Подтверждение запроса в друзья
+//    long confirmedFriend(PairFriendDto dto);
 
     // Получения друзей
     HashMap<Long, FriendshipStatus> getFriendsByUser(long userId);
 
-    // Получение запросов в друзья
-    HashSet<Long> getFriendRequestsByUser(User user);
+//    // Получение запросов в друзья
+//    HashSet<Long> getFriendRequestsByUser(User user);
 
     // Удаление друга
     boolean removeFriend(PairFriendDto dto);

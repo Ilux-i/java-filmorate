@@ -26,14 +26,17 @@ public class UserRepository extends BaseRepository<User> {
         super(jdbc, mapper);
     }
 
+    // Получение всех пользователей
     public List<User> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
 
+    // Получение пользователя по id
     public Optional<User> findById(long userId) {
         return findOne(FIND_BY_ID_QUERY, userId);
     }
 
+    // Получение пользователей по списку id
     public List<User> findUserByListId(List<Long> idUsers) {
         String placeholders = String.join(",",
                 Collections.nCopies(idUsers.size(), "?"));
@@ -42,6 +45,7 @@ public class UserRepository extends BaseRepository<User> {
                 idUsers.toArray());
     }
 
+    // Добавление пользователя
     public User add(User user) {
         long id = insert(
                 INSERT_QUERY,
@@ -54,6 +58,7 @@ public class UserRepository extends BaseRepository<User> {
         return user;
     }
 
+    // Обновление пользователя
     public User update(User user) {
         update(
                 UPDATE_QUERY,
@@ -66,6 +71,7 @@ public class UserRepository extends BaseRepository<User> {
         return user;
     }
 
+    // Удаление пользователя
     public boolean remove(long userId) {
         return delete(DELETE_QUERY, userId);
     }

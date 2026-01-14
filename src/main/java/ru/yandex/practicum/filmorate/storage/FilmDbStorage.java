@@ -49,13 +49,17 @@ public class FilmDbStorage implements FilmStorage {
     // Получение фильма
     @Override
     public Film getFilmById(long filmId) {
+        // Проверка на пустоту
         Film film = filmRepository.findById(filmId)
                 .orElseThrow(() -> new ObjectNotFoundException("User with id " + filmId + " not found"));
+        // Заполнение рейтинга
         film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        // Заполнение жанра
         film.setGenres(filmGenreRepository.findAllByFilm(filmId).stream()
                 .map(dto -> genreService.getGenre(dto.getGenreId()))
                 .collect(Collectors.toSet())
         );
+        // Заполнение лайков
         film.setLikes(likeRepository.findAllByFilm(filmId).stream()
                 .map(LikeDto::getUserId)
                 .collect(Collectors.toSet())
@@ -85,7 +89,6 @@ public class FilmDbStorage implements FilmStorage {
     public boolean removeFilm(Film film) {
         return filmRepository.remove(film.getId());
     }
-
 
     // Получение списка жанров по фильму
     @Override

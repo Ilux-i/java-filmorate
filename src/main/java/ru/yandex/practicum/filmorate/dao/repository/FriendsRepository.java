@@ -38,18 +38,21 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
         super(jdbc, mapper);
     }
 
+    // Получение списка id друзей по id пользователя
     public List<AllFriendDto> findFriendsByUserId(long userId) {
         return findMany(FIND_FRIENDS_BY_ID_QUERY, userId);
     }
 
-    public List<AllFriendDto> findFriendRequestsByUserId(long userId) {
-        return findMany(
-                FIND_FRIEND_REQUESTS_BY_ID_QUERY,
-                userId,
-                FriendshipStatus.CONFIRMED.toString()
-        );
-    }
+//    // Получение входящих запросов в друзья по id пользователя
+//    public List<AllFriendDto> findFriendRequestsByUserId(long userId) {
+//        return findMany(
+//                FIND_FRIEND_REQUESTS_BY_ID_QUERY,
+//                userId,
+//                FriendshipStatus.CONFIRMED.toString()
+//        );
+//    }
 
+    //  Получение связей пользователь-друг по списку пользователей
     public List<AllFriendDto> findFriendsByListId(List<Long> userIds) {
         if (userIds == null || userIds.isEmpty()) {
             return Collections.emptyList();
@@ -66,6 +69,7 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
         return findMany(sql, userIds.toArray());
     }
 
+    // Добавление множества связей пользователь-друг
     @Transactional
     public void addFriendsByListId(List<PairFriendDto> pairs) {
         if (pairs == null || pairs.isEmpty()) {
@@ -86,6 +90,7 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
         jdbc.batchUpdate(sql, batchArgs);
     }
 
+    // Добавление связи пользователь-друг
     public long addFriend(AllFriendDto dto) {
         return insert(
                 INSERT_QUERY,
@@ -95,18 +100,21 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
         );
     }
 
-    public long confirmFriend(PairFriendDto dto) {
-        return insert(
-                CONFIRM_FRIEND_QUERY,
-                dto.getUserId(),
-                dto.getFriendId()
-        );
-    }
+//    // Подтверждение запроса в друзья
+//    public long confirmFriend(PairFriendDto dto) {
+//        return insert(
+//                CONFIRM_FRIEND_QUERY,
+//                dto.getUserId(),
+//                dto.getFriendId()
+//        );
+//    }
 
+    // Удаление связи пользователь-друг
     public boolean remove(PairFriendDto dto) {
         return jdbc.update(REMOVE_FRIEND_QUERY, dto.getUserId(), dto.getFriendId()) > 0;
     }
 
+    // Удаление связей пользователь-друг
     public void removeFriendsByListId(List<PairFriendDto> pairs) {
         List<String> conditions = new ArrayList<>();
         List<Object> params = new ArrayList<>();

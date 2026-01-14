@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 
+// DTO с данными нового пользователя
 @Data
 public class NewUserRequest {
     private String email;
