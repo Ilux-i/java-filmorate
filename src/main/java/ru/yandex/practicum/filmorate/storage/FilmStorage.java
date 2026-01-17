@@ -52,4 +52,5 @@ public interface FilmStorage {
     // Удаления лайка
     boolean removeLike(long userId, long filmId);
 
+    Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy);
 }

@@ -4,10 +4,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.repository.RatingRepository;
+import ru.yandex.practicum.filmorate.dao.repository.DirectorRepository;
+import ru.yandex.practicum.filmorate.dao.repository.FilmDirectorRepository;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.film_director.FilmDirectorDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -40,6 +43,9 @@ public class FilmService {
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
 
+    private final FilmDirectorRepository filmDirectorRepository;
+    private final DirectorRepository directorRepository;
+
     // Добавление фильма
     public Film addFilm(final Film film) {
         // Проверка на валидацию
@@ -52,7 +58,7 @@ public class FilmService {
     }
 
     // Обновление фильма
-    public Film updateFilm(final Film film) {
+    public Film updateFilm(Film film) {
         if (film.getId() != null) {
             // Старые данные фильма
             Film oldFilm = filmStorage.getFilmById(film.getId());
@@ -60,12 +66,24 @@ public class FilmService {
             UpdateFilmRequest updateFilm = mapToUpdateFilmRequest(film);
             // Фильм из старых и обновлённый данных
             Film result = updateFilmFields(oldFilm, updateFilm);
-            // Вальдация
+            // Валидация
             if (valid(result)) {
-                if (!result.getGenres().isEmpty()) {
-                    updateGenres(result.getId(), result.getGenres());
+                if (film.getGenres() != null) {
+                    updateGenres(result.getId(), film.getGenres());
                 }
-                return filmStorage.updateFilm(result);
+                if (film.getDirectors() != null) {
+                    updateDirectors(
+                            result.getId(),
+                            film.getDirectors().stream().map(Director::getId).collect(Collectors.toSet())
+                    );
+                    result.setDirectors(film.getDirectors());
+//                    result.setDirectors(directorRepository.findAllByList(filmDirectorRepository
+//                            .findAllByFilm(result.getId()).stream()
+//                                .map(FilmDirectorDto::getDirectorId)
+//                                .toList()));
+                }
+                filmStorage.updateFilm(result);
+                return result;
             } else {
                 log.warn("Film {} not valid when updated", result);
                 throw new ValidationException("Film no valid");
@@ -91,7 +109,7 @@ public class FilmService {
         return filmStorage.getAllFilms().values();
     }
 
-    // Добавление лайкка к фильму
+    // Добавление лайка к фильму
     public Film addLike(final long userId, final long filmId) {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
@@ -147,6 +165,33 @@ public class FilmService {
         filmStorage.addGenresToFilm(filmId, toAdd);
     }
 
+    // Обновление списка режиссёров к фильму
+    private void updateDirectors(long filmId, Set<Long> directors) {
+        // Старые режиссёры
+        List<FilmDirectorDto> oldDirectors = filmDirectorRepository.findAllByFilm(filmId);
+
+        // Режиссёры, которые надо удалить
+        List<FilmDirectorDto> toRemove = oldDirectors.stream()
+                .filter(pair -> !directors.contains(pair.getDirectorId()))
+                .collect(Collectors.toList());
+
+        // Режиссёры, которые надо добавить
+        List<Long> toAdd = directors.stream()
+                .filter(directorId -> !oldDirectors.contains(directorId))
+                .collect(Collectors.toList());
+
+        filmDirectorRepository.removeFilmDirectorByPair(toRemove);
+        filmDirectorRepository.addDirectorsToFilm(filmId, toAdd);
+    }
+
+    // Удаление фильма
+    public boolean removeFilm(Film film) {
+        filmDirectorRepository.removeFilmDirectorByPair(filmDirectorRepository
+                .findAllByFilm(film.getId())
+        );
+        return filmStorage.removeFilm(film);
+    }
+
     // Валидация
     private boolean valid(Film film) {
         if (film.getMpa() != null && film.getMpa().getId() > COUNT_MPA) {
@@ -162,4 +207,7 @@ public class FilmService {
                 film.getDuration() > 0;
     }
 
+    public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
 }

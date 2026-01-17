@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public class RatingRepository extends BaseRepository<Mpa> {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM mpa WHERE id = ?";
-    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa order by id";
 
     public RatingRepository(JdbcTemplate jdbc, RowMapper<Mpa> mapper) {
         super(jdbc, mapper);
@@ -22,7 +22,7 @@ public class RatingRepository extends BaseRepository<Mpa> {
         return findOne(FIND_BY_ID_QUERY, ratingId);
     }
 
-    // Получение списка всех рейтингов
+    // Получение списка всех рейтингов в порядке убывания
     public List<Mpa> findAll() {
         return findMany(FIND_ALL_QUERY);
     }

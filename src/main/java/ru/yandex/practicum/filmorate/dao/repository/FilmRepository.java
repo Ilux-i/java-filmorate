@@ -26,6 +26,24 @@ public class FilmRepository extends BaseRepository<Film> {
             "group by f.ID " +
             "order by count(l.ID) desc " +
             "LIMIT ?";
+    private static final String GET_FILMS_BY_DIRECTOR_BY_LIKES = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id, " +
+            "COUNT(l.user_id) AS likes_count " +
+            "FROM DIRECTORS as d " +
+            "join FILM_DIRECTOR as fd on d.ID = fd.DIRECTOR_ID " +
+            "join FILMS as f on fd.FILM_ID = f.ID " +
+            "left join LIKES as l on f.ID = l.FILM_ID " +
+            "WHERE d.id = ? " +
+            "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id " +
+            "ORDER BY likes_count DESC";
+    private static final String GET_FILMS_BY_DIRECTOR_BY_YEAR = "SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id, " +
+            "COUNT(l.user_id) AS likes_count " +
+            "FROM DIRECTORS as d " +
+            "join FILM_DIRECTOR as fd on d.ID = fd.DIRECTOR_ID " +
+            "join FILMS as f on fd.FILM_ID = f.ID " +
+            "left join LIKES as l on f.ID = l.FILM_ID " +
+            "WHERE d.id = ? " +
+            "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id " +
+            "ORDER BY EXTRACT(YEAR FROM f.releaseDate); ";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -80,5 +98,14 @@ public class FilmRepository extends BaseRepository<Film> {
     // Удаление фильма по id
     public boolean remove(long filmId) {
         return delete(DELETE_QUERY, filmId);
+    }
+
+    public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
+        if (sortBy.getFirst().equals("likes")) {
+            return findMany(GET_FILMS_BY_DIRECTOR_BY_LIKES, directorId);
+        } else if (sortBy.getFirst().equals("year")) {
+            return findMany(GET_FILMS_BY_DIRECTOR_BY_YEAR, directorId);
+        }
+        return null;
     }
 }
