@@ -2,15 +2,18 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.dao.repository.FilmDirectorRepository;
 import ru.yandex.practicum.filmorate.dao.repository.FilmGenreRepository;
 import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
 import ru.yandex.practicum.filmorate.dao.repository.LikeRepository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
@@ -30,6 +33,8 @@ public class FilmDbStorage implements FilmStorage {
     private final LikeRepository likeRepository;
     private final MpaService mpaService;
     private final GenreService genreService;
+    private final FilmDirectorRepository filmDirectorRepository;
+    private final DirectorService directorService;
 
     // Добавление фильма
     @Override
@@ -37,6 +42,12 @@ public class FilmDbStorage implements FilmStorage {
         Film result = filmRepository.add(film);
         if (film.getGenres() != null) {
             film.getGenres().forEach(genre -> addGenreInFilm(result.getId(), genre.getId()));
+        }
+        if (film.getDirectors() != null) {
+            filmDirectorRepository.addDirectorsToFilm(
+                    result.getId(),
+                    film.getDirectors().stream().map(Director::getId).toList()
+            );
         }
         return result;
     }
@@ -71,6 +82,10 @@ public class FilmDbStorage implements FilmStorage {
                 .map(LikeDto::getUserId)
                 .collect(Collectors.toSet())
         );
+        // Заполнение режиссёрами
+        film.setDirectors(filmDirectorRepository.findAllByFilm(filmId).stream()
+                .map(dto -> directorService.getById(dto.getDirectorId()))
+                .collect(Collectors.toSet()));
         return film;
     }
 
@@ -86,7 +101,13 @@ public class FilmDbStorage implements FilmStorage {
         HashMap<Long, Film> result = new HashMap<>();
         filmRepository.findAll()
                 .stream()
+                // Заполнение жанрами
                 .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
+                // Заполнение режиссёрами
+                .peek(film -> film.setDirectors(filmDirectorRepository
+                        .findAllByFilm(film.getId()).stream()
+                        .map(dto -> directorService.getById(dto.getDirectorId()))
+                        .collect(Collectors.toSet())))
                 .forEach(film -> result.put(film.getId(), film));
         return result;
     }
@@ -105,6 +126,7 @@ public class FilmDbStorage implements FilmStorage {
         return filmGenreRepository.add(mapToFilmGenreDto(filmId, genreId));
     }
 
+    // Добавление жанров в фильм
     @Override
     public List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds) {
         return filmGenreRepository.addGenresToFilm(filmId, genreIds);
@@ -138,6 +160,20 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public boolean removeLike(long userId, long filmId) {
         return likeRepository.remove(filmId, userId);
+    }
+
+    @Override
+    public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
+        return filmRepository.getFilmsByDirector(directorId, sortBy)
+                .stream()
+                // Заполнение жанрами
+                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
+                // Заполнение режиссёрами
+                .peek(film -> film.setDirectors(filmDirectorRepository
+                        .findAllByFilm(film.getId()).stream()
+                        .map(dto -> directorService.getById(dto.getDirectorId()))
+                        .collect(Collectors.toSet())))
+                .toList();
     }
 
     // Получение общих фильмов

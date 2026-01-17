@@ -22,7 +22,7 @@ public class GenreRepository extends BaseRepository<Genre> {
         return findOne(FIND_BY_ID_QUERY, genreId);
     }
 
-    // Получение всех возможных жанров
+    // Получение всех возможных жанров в порядке убывания
     public List<Genre> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
