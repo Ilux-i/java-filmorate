@@ -37,7 +37,8 @@ public class DirectorService {
     // Обновление режиссёра
     public Director update(final Director director) {
         if (director.getId() != null) {
-            if(director.getName() != null) {
+            if (director.getName() != null) {
+                getById(director.getId());
                 return directorRepository.update(director);
             } else {
                 return null;

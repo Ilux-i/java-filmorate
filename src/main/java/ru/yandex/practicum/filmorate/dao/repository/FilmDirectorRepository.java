@@ -4,10 +4,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.film_director.FilmDirectorDto;
-import ru.yandex.practicum.filmorate.mapper.FilmDirectorMapper;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -19,7 +17,7 @@ public class FilmDirectorRepository extends BaseRepository<FilmDirectorDto> {
     private static final String INSERT_QUERY = "INSERT INTO film_director(film_id, director_id) VALUES (?, ?)";
     private static final String INSERT_DIRECTORS_IN_FILM_QUERY = "INSERT INTO film_director(film_id, director_id) VALUES (?, ?)";
     private static final String REMOVE_FILM_DIRECTOR_QUERY = "DELETE FROM film_director WHERE film_id = ? AND director_id = ?";
-    private static final String DELETE_BY_LIST_QUERY = "DELETE FROM friends WHERE ";
+    private static final String DELETE_BY_LIST_QUERY = "DELETE FROM film_director WHERE ";
 
     public FilmDirectorRepository(JdbcTemplate jdbc, RowMapper<FilmDirectorDto> mapper) {
         super(jdbc, mapper);
@@ -47,25 +45,18 @@ public class FilmDirectorRepository extends BaseRepository<FilmDirectorDto> {
     }
 
     // Добавление списка режиссёров к фильму по id
-    public List<FilmDirectorDto> addDirectorsToFilm(long filmId, List<Long> directorIds) {
+    public void addDirectorsToFilm(long filmId, List<Long> directorIds) {
         if (directorIds == null || directorIds.isEmpty()) {
-            return Collections.emptyList();
+            return;
         }
 
         // Подготовка данных к сохранению в бд
         List<Object[]> batchArgs = directorIds.stream()
-                .map(genreId -> new Object[]{filmId, genreId})
+                .map(directorId -> new Object[]{filmId, directorId})
                 .collect(Collectors.toList());
 
         // Сохранение данных
         jdbc.batchUpdate(INSERT_DIRECTORS_IN_FILM_QUERY, batchArgs);
-
-        // Возвращение списка FilmGenreDto к фильму
-        return directorIds.stream()
-                .map(directorId ->
-                        FilmDirectorMapper.mapToFilmDirectorDto(filmId, directorId)
-                )
-                .collect(Collectors.toList());
     }
 
     // Удаление связи фильм-режиссёр
@@ -75,10 +66,11 @@ public class FilmDirectorRepository extends BaseRepository<FilmDirectorDto> {
 
     // Удаление связей фильм-режиссёр
     public void removeFilmDirectorByPair(List<FilmDirectorDto> pairs) {
+        if (pairs.isEmpty()) return;
         List<String> conditions = new ArrayList<>();
         List<Object> params = new ArrayList<>();
         for (FilmDirectorDto pair : pairs) {
-            conditions.add("(user_id = ? AND friend_id = ?)");
+            conditions.add("(film_id = ? AND director_id = ?)");
             params.add(pair.getFilmId());
             params.add(pair.getDirectorId());
         }

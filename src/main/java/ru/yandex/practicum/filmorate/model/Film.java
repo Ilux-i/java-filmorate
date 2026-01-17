@@ -24,6 +24,6 @@ public class Film {
     private Set<Genre> genres = new HashSet<>();
 
     @Builder.Default
-    private Set<Long> directors = new HashSet<>();
+    private Set<Director> directors = new HashSet<>();
 }
 
