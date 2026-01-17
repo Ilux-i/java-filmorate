@@ -54,4 +54,7 @@ public interface FilmStorage {
 
     // Получение общих фильмов
     List<Film> getCommonFilms(long userId, long friendId);
+
+    // Получение фильмов по режиссёру
+    Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy);
 }
