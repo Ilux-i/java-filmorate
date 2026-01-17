@@ -46,6 +46,12 @@ public class FilmDbStorage implements FilmStorage {
         return filmRepository.update(film);
     }
 
+    // Удаление фильма
+    @Override
+    public void deleteFilm(long id) {
+        filmRepository.remove(id);
+    }
+
     // Получение фильма
     @Override
     public Film getFilmById(long filmId) {
@@ -82,12 +88,6 @@ public class FilmDbStorage implements FilmStorage {
                 .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
                 .forEach(film -> result.put(film.getId(), film));
         return result;
-    }
-
-    // Удаление фильма
-    @Override
-    public boolean removeFilm(Film film) {
-        return filmRepository.remove(film.getId());
     }
 
     // Получение списка жанров по фильму

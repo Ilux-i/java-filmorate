@@ -20,12 +20,13 @@ public class FilmRepository extends BaseRepository<Film> {
             "SET name = ?, description = ?, releaseDate = ?, duration = ?, rating_id = ? " +
             "WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
-    private static final String FIND_POPULAR_FILM_QUERY = "select f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
-            "from FILMS as f " +
-            "right join LIKES as l on f.ID = l.FILM_ID " +
-            "group by f.ID " +
-            "order by count(l.ID) desc " +
-            "LIMIT ?";
+    private static final String FIND_POPULAR_FILM_QUERY =
+            "SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
+                    "FROM FILMS f " +
+                    "LEFT JOIN LIKES l ON f.ID = l.FILM_ID " +
+                    "GROUP BY f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
+                    "ORDER BY COUNT(l.ID) DESC " +
+                    "LIMIT ?";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -78,7 +79,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     // Удаление фильма по id
-    public boolean remove(long filmId) {
-        return delete(DELETE_QUERY, filmId);
+    public void remove(long filmId) {
+        delete(DELETE_QUERY, filmId);
     }
 }
