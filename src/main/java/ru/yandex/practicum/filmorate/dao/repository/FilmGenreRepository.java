@@ -39,7 +39,7 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
         return dto;
     }
 
-    // Добавление списка жанров к фильму по из id
+    // Добавление списка жанров к фильму по id
     public List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds) {
         if (genreIds == null || genreIds.isEmpty()) {
             return Collections.emptyList();
