@@ -52,4 +52,6 @@ public interface FilmStorage {
     // Удаления лайка
     boolean removeLike(long userId, long filmId);
 
+    // Получение общих фильмов
+    List<Film> getCommonFilms(long userId, long friendId);
 }
