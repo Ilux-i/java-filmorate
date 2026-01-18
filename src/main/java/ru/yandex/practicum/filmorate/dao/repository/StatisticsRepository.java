@@ -22,47 +22,18 @@ public class StatisticsRepository {
     private final JdbcTemplate jdbc;
     private final FilmRowMapper filmRowMapper;
 
-    // Получение самых популярных фильмов по жанру и году
-    public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
-        log.debug("getPopularFilmsByGenreAndYear called with: genreId={}, year={}, limit={}", genreId, year, limit);
-        String sql = "SELECT f.* " +
-                "FROM films f " +
-                "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
-                "LEFT JOIN likes l ON f.id = l.film_id " +
-                "WHERE (? IS NULL OR fg.genre_id = ?) " +
-                "  AND (? IS NULL OR YEAR(f.releaseDate) = ?) " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(l.id) DESC " +
-                "LIMIT ?";
-
-        try {
-            List<Film> result = jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
-            log.debug("getPopularFilmsByGenreAndYear returned {} films", result.size());
-            return result;
-        } catch (Exception e) {
-            log.error("Error in getPopularFilmsByGenreAndYear: ", e);
-            throw e;
-        }
-    }
-
-    // Получение статистики по жанрам и годам
-    public List<GenreYearStatistic> getGenreYearStatistics() {
-        String sql = "SELECT YEAR(f.releaseDate) as year, " +
-                "       fg.genre_id as genreId, " +
-                "       COUNT(DISTINCT l.id) as likeCount, " +
-                "       COUNT(DISTINCT f.id) as filmCount " +
-                "FROM films f " +
-                "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
-                "LEFT JOIN likes l ON f.id = l.film_id " +
-                "WHERE fg.genre_id IS NOT NULL " +
-                "GROUP BY YEAR(f.releaseDate), fg.genre_id " +
-                "ORDER BY year DESC, likeCount DESC";
-        return jdbc.query(sql, this::mapToGenreYearStatistic);
-    }
-
     // Получение рекомендаций для пользователя на основе коллаборативной фильтрации
     public List<Film> getRecommendationsForUser(Long userId) {
         log.debug("getRecommendationsForUser called with userId: {}", userId);
+
+        // Проверяем, есть ли у пользователя лайки
+        String checkUserLikesSql = "SELECT COUNT(*) FROM likes WHERE user_id = ?";
+        Integer userLikeCount = jdbc.queryForObject(checkUserLikesSql, Integer.class, userId);
+
+        if (userLikeCount == null || userLikeCount == 0) {
+            log.debug("User {} has no likes, returning empty list", userId);
+            return Collections.emptyList();
+        }
 
         // Находим пользователей с похожими вкусами
         String similarUsersSql = "SELECT l2.user_id " +
@@ -79,8 +50,8 @@ public class StatisticsRepository {
             log.debug("Found {} similar users for userId: {}", similarUserIds.size(), userId);
 
             if (similarUserIds.isEmpty()) {
-                log.debug("No similar users found, returning popular films");
-                return getPopularFilms(10L);
+                log.debug("No similar users found for userId: {}", userId);
+                return Collections.emptyList();
             }
 
             // Находим фильмы, которые понравились похожим пользователям, но не текущему
@@ -106,13 +77,23 @@ public class StatisticsRepository {
             return result;
         } catch (Exception e) {
             log.error("Error in getRecommendationsForUser for userId {}: ", userId, e);
-            return new ArrayList<>(); // Возвращаем пустой список вместо выброса исключения
+            return Collections.emptyList();
         }
     }
 
     // Получение рекомендаций на основе жанров пользователя
     public List<Film> getGenreBasedRecommendations(Long userId) {
         log.debug("getGenreBasedRecommendations called with userId: {}", userId);
+
+        // Проверяем, есть ли у пользователя лайки
+        String checkUserLikesSql = "SELECT COUNT(*) FROM likes WHERE user_id = ?";
+        Integer userLikeCount = jdbc.queryForObject(checkUserLikesSql, Integer.class, userId);
+
+        if (userLikeCount == null || userLikeCount == 0) {
+            log.debug("User {} has no likes, cannot get genre-based recommendations", userId);
+            return Collections.emptyList();
+        }
+
         String sql = "SELECT f.* " +
                 "FROM films f " +
                 "JOIN film_genre fg ON f.id = fg.film_id " +
@@ -141,28 +122,71 @@ public class StatisticsRepository {
             return result;
         } catch (Exception e) {
             log.error("Error in getGenreBasedRecommendations for userId {}: ", userId, e);
-            return new ArrayList<>(); // Возвращаем пустой список вместо выброса исключения
+            return Collections.emptyList();
         }
     }
 
+    // Получение популярных фильмов по жанру и году
+    public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
+        log.debug("getPopularFilmsByGenreAndYear called with: genreId={}, year={}, limit={}", genreId, year, limit);
 
-    // Получение популярных фильмов
-    private List<Film> getPopularFilms(Long limit) {
-        log.debug("getPopularFilms called with limit: {}", limit);
-        String sql = "SELECT f.* " +
-                "FROM films f " +
-                "LEFT JOIN likes l ON f.id = l.film_id " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(l.id) DESC " +
-                "LIMIT ?";
+        StringBuilder sql = new StringBuilder(
+                "SELECT f.* " +
+                        "FROM films f " +
+                        "LEFT JOIN likes l ON f.id = l.film_id "
+        );
+
+        if (genreId != null) {
+            sql.append("INNER JOIN film_genre fg ON f.id = fg.film_id ");
+        }
+
+        sql.append("WHERE 1=1 ");
+
+        List<Object> params = new ArrayList<>();
+
+        if (genreId != null) {
+            sql.append("AND fg.genre_id = ? ");
+            params.add(genreId);
+        }
+
+        if (year != null) {
+            sql.append("AND YEAR(f.releaseDate) = ? ");
+            params.add(year);
+        }
+
+        sql.append("GROUP BY f.id ");
+        sql.append("ORDER BY COUNT(l.id) DESC ");
+        sql.append("LIMIT ? ");
+        params.add(limit);
 
         try {
-            List<Film> result = jdbc.query(sql, filmRowMapper, limit);
-            log.debug("getPopularFilms returned {} films", result.size());
+            List<Film> result = jdbc.query(sql.toString(), filmRowMapper, params.toArray());
+            log.debug("getPopularFilmsByGenreAndYear returned {} films", result.size());
             return result;
         } catch (Exception e) {
-            log.error("Error in getPopularFilms: ", e);
-            return new ArrayList<>();
+            log.error("Error in getPopularFilmsByGenreAndYear: ", e);
+            return Collections.emptyList();
+        }
+    }
+
+    // Получение статистики по жанрам и годам
+    public List<GenreYearStatistic> getGenreYearStatistics() {
+        String sql = "SELECT YEAR(f.releaseDate) as year, " +
+                "       fg.genre_id as genreId, " +
+                "       COUNT(DISTINCT l.id) as likeCount, " +
+                "       COUNT(DISTINCT f.id) as filmCount " +
+                "FROM films f " +
+                "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
+                "LEFT JOIN likes l ON f.id = l.film_id " +
+                "WHERE fg.genre_id IS NOT NULL " +
+                "GROUP BY YEAR(f.releaseDate), fg.genre_id " +
+                "ORDER BY year DESC, likeCount DESC";
+
+        try {
+            return jdbc.query(sql, this::mapToGenreYearStatistic);
+        } catch (Exception e) {
+            log.error("Error in getGenreYearStatistics: ", e);
+            return Collections.emptyList();
         }
     }
 

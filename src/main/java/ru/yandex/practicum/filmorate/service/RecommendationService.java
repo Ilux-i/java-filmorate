@@ -22,40 +22,37 @@ public class RecommendationService {
     private final FilmService filmService;
     private final GenreService genreService;
 
-    // Получение рекомендаций для пользователя
     public List<Film> getRecommendations(Long userId) {
-        log.info("Начало получения рекомендаций для пользователя с ID: {}", userId);
+        log.info("====== RecommendationService.getRecommendations ВЫЗВАН ДЛЯ userId: {} ======", userId);
         try {
             // Проверяем существование пользователя
             userStorage.getUserById(userId);
 
-            // Получаем рекомендации разными методами
-            List<Film> collaborativeFilms = statisticsRepository.getRecommendationsForUser(userId);
-            List<Film> genreBasedFilms = statisticsRepository.getGenreBasedRecommendations(userId);
+            // Получаем рекомендации только на основе коллаборативной фильтрации
+            List<Film> recommendations = statisticsRepository.getRecommendationsForUser(userId);
 
-            // Объединяем и убираем дубликаты
-            Set<Film> allRecommendations = new LinkedHashSet<>();
-            allRecommendations.addAll(collaborativeFilms);
-            allRecommendations.addAll(genreBasedFilms);
+            log.debug("Коллаборативные рекомендации для пользователя {}: {} фильмов",
+                    userId, recommendations.size());
 
             // Обогащаем фильмы полной информацией
             List<Film> result = new ArrayList<>();
-            for (Film film : allRecommendations) {
+            for (Film film : recommendations) {
                 try {
-                    result.add(filmService.getFilmById(film.getId()));
+                    Film fullFilm = filmService.getFilmById(film.getId());
+                    result.add(fullFilm);
                 } catch (Exception e) {
                     log.warn("Фильм с id {} не найден, пропускаем: {}", film.getId(), e.getMessage());
                 }
             }
 
-            log.info("Рекомендации для пользователя с ID: {} успешно получены, количество: {}",
-                    userId, result.size());
+            log.info("====== RecommendationService.getRecommendations УСПЕШНО ВЕРНУЛ {} РЕКОМЕНДАЦИЙ ДЛЯ userId: {} ======",
+                    result.size(), userId);
             return result;
         } catch (ObjectNotFoundException e) {
             log.error("Пользователь с ID: {} не найден", userId, e);
             throw e;
         } catch (Exception e) {
-            log.error("Ошибка при получении рекомендаций для пользователя {}: {}", userId, e.getMessage(), e);
+            log.error("Ошибка в RecommendationService.getRecommendations для userId {}: {}", userId, e.getMessage(), e);
             throw new InternalServerException("Ошибка при получении рекомендаций: " + e.getMessage());
         }
     }
