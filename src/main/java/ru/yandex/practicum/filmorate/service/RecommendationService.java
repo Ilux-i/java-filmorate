@@ -8,8 +8,7 @@ import ru.yandex.practicum.filmorate.dto.statistics.GenreYearStatistic;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Recommendation;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage; // Добавьте эту строку
 
 import java.util.*;
 
@@ -19,12 +18,12 @@ import java.util.*;
 public class RecommendationService {
 
     private final StatisticsRepository statisticsRepository;
-    private final UserStorage userStorage;
+    private final UserStorage userStorage; // Этот импорт теперь будет работать
     private final FilmService filmService;
     private final GenreService genreService;
 
-    // Получение рекомендаций для пользователя
-    public Recommendation getRecommendations(Long userId) {
+    // Получение рекомендаций для пользователя - ТЕПЕРЬ ВОЗВРАЩАЕМ List<Film>
+    public List<Film> getRecommendations(Long userId) {
         try {
             // Проверяем существование пользователя
             userStorage.getUserById(userId);
@@ -38,28 +37,27 @@ public class RecommendationService {
             allRecommendations.addAll(collaborativeFilms);
             allRecommendations.addAll(genreBasedFilms);
 
-            // Обогащаем фильмы полной информацией
-            Set<Film> enrichedFilms = new LinkedHashSet<>();
+            // Обогащаем фильмы полной информацией и преобразуем в List
+            List<Film> result = new ArrayList<>();
             for (Film film : allRecommendations) {
                 try {
-                    enrichedFilms.add(filmService.getFilmById(film.getId()));
+                    Film fullFilm = filmService.getFilmById(film.getId());
+                    result.add(fullFilm);
                 } catch (Exception e) {
                     log.warn("Фильм с id {} не найден, пропускаем", film.getId());
                 }
             }
 
-            return Recommendation.builder()
-                    .userId(userId)
-                    .recommendedFilms(enrichedFilms)
-                    .build();
+            return result;
         } catch (ObjectNotFoundException e) {
             throw e;
         } catch (Exception e) {
             log.error("Ошибка при получении рекомендаций для пользователя {}: {}", userId, e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении рекомендаций");
+            throw new InternalServerException("Ошибка при получении рекомендаций: " + e.getMessage());
         }
     }
 
+    // Остальной код остается без изменений...
     // Получение популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
         try {
@@ -93,7 +91,7 @@ public class RecommendationService {
         } catch (Exception e) {
             log.error("Ошибка при получении популярных фильмов: жанр={}, год={}, лимит={}: {}",
                     genreId, year, limit, e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении популярных фильмов");
+            throw new InternalServerException("Ошибка при получении популярных фильмов: " + e.getMessage());
         }
     }
 
@@ -145,7 +143,7 @@ public class RecommendationService {
             return result;
         } catch (Exception e) {
             log.error("Ошибка при получении статистики: {}", e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении статистики");
+            throw new InternalServerException("Ошибка при получении статистики: " + e.getMessage());
         }
     }
 
@@ -156,20 +154,18 @@ public class RecommendationService {
                 limit = 10L;
             }
 
-            String sql = """
-                SELECT
-                    g.id as genreId,
-                    g.name as genreName,
-                    COUNT(DISTINCT l.id) as totalLikes,
-                    COUNT(DISTINCT f.id) as totalFilms
-                FROM genres g
-                LEFT JOIN film_genre fg ON g.id = fg.genre_id
-                LEFT JOIN films f ON fg.film_id = f.id
-                LEFT JOIN likes l ON f.id = l.film_id
-                GROUP BY g.id, g.name
-                ORDER BY totalLikes DESC, totalFilms DESC
-                LIMIT ?
-                """;
+            String sql = "SELECT " +
+                    "    g.id as genreId, " +
+                    "    g.name as genreName, " +
+                    "    COUNT(DISTINCT l.id) as totalLikes, " +
+                    "    COUNT(DISTINCT f.id) as totalFilms " +
+                    "FROM genres g " +
+                    "LEFT JOIN film_genre fg ON g.id = fg.genre_id " +
+                    "LEFT JOIN films f ON fg.film_id = f.id " +
+                    "LEFT JOIN likes l ON f.id = l.film_id " +
+                    "GROUP BY g.id, g.name " +
+                    "ORDER BY totalLikes DESC, totalFilms DESC " +
+                    "LIMIT ?";
 
             return statisticsRepository.getJdbcTemplate().query(sql, (rs, rowNum) -> {
                 Map<String, Object> genreStat = new HashMap<>();
@@ -181,7 +177,7 @@ public class RecommendationService {
             }, limit);
         } catch (Exception e) {
             log.error("Ошибка при получении топовых жанров: {}", e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении топовых жанров");
+            throw new InternalServerException("Ошибка при получении топовых жанров: " + e.getMessage());
         }
     }
 }

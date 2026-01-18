@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.model;
+/*package ru.yandex.practicum.filmorate.model;
 
 import lombok.Builder;
 import lombok.Data;
@@ -11,4 +11,4 @@ public class Recommendation {
     private Long userId;
     @Builder.Default
     private Set<Film> recommendedFilms = new HashSet<>();
-}
+}*/

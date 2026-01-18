@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Recommendation;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 
 import java.util.List;
@@ -18,15 +17,15 @@ public class RecommendationController {
 
     private final RecommendationService recommendationService;
 
-    // Получение рекомендаций для пользователя
+    // Получение рекомендаций для пользователя - ВОЗВРАЩАЕМ ЛИСТ ФИЛЬМОВ, А НЕ ОБЪЕКТ Recommendation
     @GetMapping("/users/{userId}")
-    public Recommendation getUserRecommendations(@PathVariable Long userId) {
+    public List<Film> getUserRecommendations(@PathVariable Long userId) {
         log.info("Получение рекомендаций для пользователя с ID: {}", userId);
         return recommendationService.getRecommendations(userId);
     }
 
     // Получение популярных фильмов по жанру и/или году
-    @GetMapping("/popular-films")  // Изменили путь с "/popular" на "/popular-films"
+    @GetMapping("/popular-films")
     public List<Film> getPopularFilmsByGenreAndYear(
             @RequestParam(required = false) Long genreId,
             @RequestParam(required = false) Integer year,
