@@ -24,22 +24,24 @@ public class StatisticsRepository {
 
     // Получение самых популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
-        String sql = " SELECT f.*\n" +
-                     "FROM films f\n" +
-                     "LEFT JOIN film_genre fg ON f.id = fg.film_id\n" +
-                     "LEFT JOIN likes l ON f.id = l.film_id\n" +
-                     "WHERE (? IS NULL OR fg.genre_id = ?)\n" +
-                     "AND (? IS NULL OR YEAR(f.releaseDate) = ?)\n" +
-                     "GROUP BY f.id\n" +
-                     "ORDER BY COUNT(l.id) DESC\n" +
-                     "LIMIT ?\n";
+        String sql ="""
+                SELECT f.*
+                FROM films f
+                LEFT JOIN film_genre fg ON f.id = fg.film_id
+                LEFT JOIN likes l ON f.id = l.film_id
+                WHERE (? IS NULL OR fg.genre_id = ?)
+                AND (? IS NULL OR YEAR(f.releaseDate) = ?)
+                GROUP BY f.id
+                ORDER BY COUNT(l.id) DESC
+                LIMIT ?
+                """;
 
         return jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
     }
 
     // Получение статистики по жанрам и годам
     public List<GenreYearStatistic> getGenreYearStatistics() {
-        String sql = """
+        String sql ="""
                 SELECT
                 YEAR(f.releaseDate) as year,
                 fg.genre_id as genreId,
@@ -59,7 +61,7 @@ public class StatisticsRepository {
     // Получение рекомендаций для пользователя на основе коллаборативной фильтрации
     public List<Film> getRecommendationsForUser(Long userId) {
         // Находим пользователей с похожими вкусами
-        String similarUsersSql = """
+        String similarUsersSql ="""
                 SELECT l2.user_id
                 FROM likes l1
                 JOIN likes l2 ON l1.film_id = l2.film_id
@@ -104,7 +106,7 @@ public class StatisticsRepository {
 
     // Получение рекомендаций на основе жанров пользователя
     public List<Film> getGenreBasedRecommendations(Long userId) {
-        String sql = """
+        String sql ="""
                 SELECT f.*
                 FROM films f
                 JOIN film_genre fg ON f.id = fg.film_id
@@ -133,7 +135,7 @@ public class StatisticsRepository {
 
     // Получение популярных фильмов
     private List<Film> getPopularFilms(Long limit) {
-        String sql = """
+        String sql ="""
                 SELECT f.*
                 FROM films f
                 LEFT JOIN likes l ON f.id = l.film_id
