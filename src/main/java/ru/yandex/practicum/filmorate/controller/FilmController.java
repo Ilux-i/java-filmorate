@@ -5,8 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
-import org.springframework.beans.factory.annotation.Autowired;
-import ru.yandex.practicum.filmorate.service.RecommendationService;
 
 import java.util.Collection;
 
@@ -17,23 +15,11 @@ import java.util.Collection;
 public class FilmController {
 
     private final FilmService filmService;
-    @Autowired
-    private RecommendationService recommendationService; // Добавляем сервис рекомендаций
 
     // Добавление фильма
     @PostMapping
     public Film addFilm(@RequestBody final Film film) {
         return filmService.addFilm(film);
-    }
-
-    @GetMapping("/popular/advanced")
-    public Collection<Film> getAdvancedPopularFilms(
-            @RequestParam(required = false) Long genreId,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(defaultValue = "10") Long count) {
-
-        log.info("Запрос популярных фильмов: жанр={}, год={}, количество={}", genreId, year, count);
-        return recommendationService.getPopularFilmsByGenreAndYear(genreId, year, count);
     }
 
     // Обновление фильма
@@ -72,5 +58,4 @@ public class FilmController {
     public void deleteLike(@PathVariable final long id, @PathVariable final long userId) {
         filmService.removeLike(userId, id);
     }
-
 }

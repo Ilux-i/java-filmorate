@@ -26,8 +26,8 @@ public class RecommendationController {
     }
 
     // Получение популярных фильмов по жанру и/или году
-    @GetMapping("/popular")
-    public List<Film> getPopularFilms(
+    @GetMapping("/popular-films")  // Изменили путь с "/popular" на "/popular-films"
+    public List<Film> getPopularFilmsByGenreAndYear(
             @RequestParam(required = false) Long genreId,
             @RequestParam(required = false) Integer year,
             @RequestParam(defaultValue = "10") Long limit) {
