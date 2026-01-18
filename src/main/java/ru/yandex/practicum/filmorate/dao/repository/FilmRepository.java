@@ -82,4 +82,9 @@ public class FilmRepository extends BaseRepository<Film> {
     public void remove(long filmId) {
         delete(DELETE_QUERY, filmId);
     }
+
+    //Получение общих фильмов
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(COMMON_FILMS_QUERY, userId, friendId);
+    }
 }
