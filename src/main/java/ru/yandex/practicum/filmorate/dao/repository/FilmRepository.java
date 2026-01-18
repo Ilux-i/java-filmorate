@@ -88,7 +88,7 @@ public class FilmRepository extends BaseRepository<Film> {
     }
 
     //Получение общих фильмов
-    public List<Film> getCommonFilms (long userId, long friendId) {
+    public List<Film> getCommonFilms(long userId, long friendId) {
         return findMany(COMMON_FILMS_QUERY, userId, friendId);
     }
 }
