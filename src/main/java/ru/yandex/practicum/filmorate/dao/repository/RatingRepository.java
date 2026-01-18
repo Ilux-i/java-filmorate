@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public class RatingRepository extends BaseRepository<Mpa> {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM mpa WHERE id = ?";
-    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa";
+    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa order by id";
 
     // Используем конкретный тип RatingRowMapper
     public RatingRepository(JdbcTemplate jdbc, RatingRowMapper mapper) {
