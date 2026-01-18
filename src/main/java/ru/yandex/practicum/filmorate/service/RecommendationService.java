@@ -119,7 +119,7 @@ public class RecommendationService {
     // Получение топовых жанров
     public List<Map<String, Object>> getTopGenres(Long limit) {
         String sql = """
-            SELECT 
+            SELECT
                 g.id as genreId,
                 g.name as genreName,
                 COUNT(DISTINCT l.id) as totalLikes,
