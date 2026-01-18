@@ -162,4 +162,18 @@ public class FilmService {
                 film.getDuration() > 0;
     }
 
+    // Получение общих фильмов
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        // Валидация
+        if (userId < 1 || friendId < 1) {
+            log.warn("Не найден пользователь или друг: {}, {}", userId, friendId);
+            throw new ValidationException("Не найден пользователь или друг");
+        }
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        List<Film> common = filmStorage.getCommonFilms(userId, friendId);
+        log.info("Общие фильмы для пользователей {} и {}: {} штук", userId, friendId, common.size());
+        return common;
+    }
+
 }
