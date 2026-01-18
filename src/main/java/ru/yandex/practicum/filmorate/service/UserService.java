@@ -75,6 +75,19 @@ public class UserService {
         }
     }
 
+    // Удаление пользователя
+    public void remove(long id) {
+        if (!userStorage.contains(id)) {
+            throw new ObjectNotFoundException("Пользователя с таким id не найдено");
+        }
+        userStorage.deleteUser(id);
+    }
+
+    // Получение пользователя по id
+    public User getUserById(final long id) {
+        return userStorage.getUserById(id);
+    }
+
     // Получение всех пользователей
     public Collection<User> getAllUsers() {
         return userStorage.getAllUsers().values();
