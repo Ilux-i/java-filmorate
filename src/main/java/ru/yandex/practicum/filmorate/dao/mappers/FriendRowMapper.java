@@ -13,10 +13,9 @@ public class FriendRowMapper implements RowMapper<AllFriendDto> {
     @Override
     public AllFriendDto mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         AllFriendDto dto = new AllFriendDto();
-        dto.setUserId(resultSet.getInt("user_id"));
-        dto.setFriendId(resultSet.getInt("friend_id"));
+        dto.setUserId(resultSet.getLong("user_id"));  // Изменено с getInt на getLong
+        dto.setFriendId(resultSet.getLong("friend_id"));  // Изменено с getInt на getLong
         dto.setStatus(FriendshipStatus.valueOf(resultSet.getString("status")));
         return dto;
     }
 }
-

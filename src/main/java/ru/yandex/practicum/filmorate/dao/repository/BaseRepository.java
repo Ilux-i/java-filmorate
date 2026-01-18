@@ -15,7 +15,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BaseRepository<T> {
     protected final JdbcTemplate jdbc;
-    protected final RowMapper<T> mapper;
+    protected final RowMapper<T> mapper;  // Только одна строка с mapper
 
     protected Optional<T> findOne(String query, Object... params) {
         try {

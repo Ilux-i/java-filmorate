@@ -21,13 +21,13 @@ public class FilmRowMapper implements RowMapper<Film> {
             releaseDate = timestamp.toLocalDateTime().toLocalDate();
         }
         return Film.builder()
-                .id(resultSet.getLong("id"))
+                .id(resultSet.getLong("id"))  // Используйте getLong для Long полей
                 .name(resultSet.getString("name"))
                 .description(resultSet.getString("description"))
                 .releaseDate(releaseDate)
                 .duration(resultSet.getInt("duration"))
                 .mpa(Mpa.builder()
-                        .id(resultSet.getInt("rating_id"))
+                        .id(resultSet.getLong("rating_id"))  // Если rating_id тоже Long
                         .build())
                 .build();
     }
