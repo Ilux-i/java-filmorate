@@ -22,54 +22,29 @@ public class RecommendationService {
     private final FilmService filmService;
     private final GenreService genreService;
 
+    // Получение рекомендаций для пользователя
     public List<Film> getRecommendations(Long userId) {
         log.info("Начало получения рекомендаций для пользователя с ID: {}", userId);
         try {
             // Проверяем существование пользователя
-            log.debug("Проверка пользователя с ID: {}", userId);
             userStorage.getUserById(userId);
-            log.debug("Пользователь с ID: {} найден", userId);
 
             // Получаем рекомендации разными методами
-            log.debug("Получение коллаборативных рекомендаций для пользователя с ID: {}", userId);
-            List<Film> collaborativeFilms;
-            try {
-                collaborativeFilms = statisticsRepository.getRecommendationsForUser(userId);
-                log.debug("Коллаборативные рекомендации для пользователя с ID: {} получены, количество: {}",
-                        userId, collaborativeFilms.size());
-            } catch (Exception e) {
-                log.error("Ошибка при получении коллаборативных рекомендаций для пользователя {}: {}",
-                        userId, e.getMessage(), e);
-                collaborativeFilms = new ArrayList<>();
-            }
-
-            log.debug("Получение рекомендаций по жанрам для пользователя с ID: {}", userId);
-            List<Film> genreBasedFilms;
-            try {
-                genreBasedFilms = statisticsRepository.getGenreBasedRecommendations(userId);
-                log.debug("Рекомендации по жанрам для пользователя с ID: {} получены, количество: {}",
-                        userId, genreBasedFilms.size());
-            } catch (Exception e) {
-                log.error("Ошибка при получении рекомендаций по жанрам для пользователя {}: {}",
-                        userId, e.getMessage(), e);
-                genreBasedFilms = new ArrayList<>();
-            }
+            List<Film> collaborativeFilms = statisticsRepository.getRecommendationsForUser(userId);
+            List<Film> genreBasedFilms = statisticsRepository.getGenreBasedRecommendations(userId);
 
             // Объединяем и убираем дубликаты
             Set<Film> allRecommendations = new LinkedHashSet<>();
             allRecommendations.addAll(collaborativeFilms);
             allRecommendations.addAll(genreBasedFilms);
-            log.debug("Всего уникальных рекомендаций для пользователя с ID: {}: {}",
-                    userId, allRecommendations.size());
 
-            // Обогащаем фильмы полной информацией и преобразуем в List
+            // Обогащаем фильмы полной информацией
             List<Film> result = new ArrayList<>();
             for (Film film : allRecommendations) {
                 try {
-                    Film fullFilm = filmService.getFilmById(film.getId());
-                    result.add(fullFilm);
+                    result.add(filmService.getFilmById(film.getId()));
                 } catch (Exception e) {
-                    log.warn("Фильм с id {} не найден, пропускаем. Ошибка: {}", film.getId(), e.getMessage());
+                    log.warn("Фильм с id {} не найден, пропускаем: {}", film.getId(), e.getMessage());
                 }
             }
 
