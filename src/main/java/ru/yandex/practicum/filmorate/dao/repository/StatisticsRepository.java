@@ -25,16 +25,16 @@ public class StatisticsRepository {
     // Получение самых популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
         String sql = """
-                SELECT f.*\s
-                FROM films f
-                LEFT JOIN film_genre fg ON f.id = fg.film_id
-                LEFT JOIN likes l ON f.id = l.film_id
-                WHERE (? IS NULL OR fg.genre_id = ?)
-                  AND (? IS NULL OR YEAR(f.releaseDate) = ?)
-                GROUP BY f.id
-                ORDER BY COUNT(l.id) DESC
-                LIMIT ?
-               \s""";
+                 SELECT f.*
+                 FROM films f
+                 LEFT JOIN film_genre fg ON f.id = fg.film_id
+                 LEFT JOIN likes l ON f.id = l.film_id
+                 WHERE (? IS NULL OR fg.genre_id = ?)
+                   AND (? IS NULL OR YEAR(f.releaseDate) = ?)
+                 GROUP BY f.id
+                 ORDER BY COUNT(l.id) DESC
+                 LIMIT ?
+                """;
 
         return jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
     }
@@ -43,10 +43,10 @@ public class StatisticsRepository {
     public List<GenreYearStatistic> getGenreYearStatistics() {
         String sql = """
                 SELECT
-                    YEAR(f.releaseDate) as year,
-                    fg.genre_id as genreId,
-                    COUNT(DISTINCT l.id) as likeCount,
-                    COUNT(DISTINCT f.id) as filmCount
+                YEAR(f.releaseDate) as year,
+                fg.genre_id as genreId,
+                COUNT(DISTINCT l.id) as likeCount,
+                COUNT(DISTINCT f.id) as filmCount
                 FROM films f
                 LEFT JOIN film_genre fg ON f.id = fg.film_id
                 LEFT JOIN likes l ON f.id = l.film_id
@@ -66,7 +66,7 @@ public class StatisticsRepository {
                 FROM likes l1
                 JOIN likes l2 ON l1.film_id = l2.film_id
                 WHERE l1.user_id = ?
-                  AND l2.user_id != ?
+                AND l2.user_id != ?
                 GROUP BY l2.user_id
                 ORDER BY COUNT(DISTINCT l1.film_id) DESC
                 LIMIT 5
@@ -111,21 +111,21 @@ public class StatisticsRepository {
                 FROM films f
                 JOIN film_genre fg ON f.id = fg.film_id
                 WHERE fg.genre_id IN (
-                    SELECT DISTINCT fg2.genre_id
-                    FROM likes l
-                    JOIN film_genre fg2 ON l.film_id = fg2.film_id
-                    WHERE l.user_id = ?
+                SELECT DISTINCT fg2.genre_id
+                FROM likes l
+                JOIN film_genre fg2 ON l.film_id = fg2.film_id
+                WHERE l.user_id = ?
                 )
                 AND f.id NOT IN (
-                    SELECT film_id
-                    FROM likes
-                    WHERE user_id = ?
+                SELECT film_id
+                FROM likes
+                WHERE user_id = ?
                 )
                 GROUP BY f.id
                 ORDER BY (
-                    SELECT COUNT(*)
-                    FROM likes l2
-                    WHERE l2.film_id = f.id
+                SELECT COUNT(*)
+                FROM likes l2
+                WHERE l2.film_id = f.id
                 ) DESC
                 LIMIT 10
                 """;
