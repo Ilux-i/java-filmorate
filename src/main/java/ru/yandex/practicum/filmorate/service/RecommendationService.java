@@ -22,20 +22,45 @@ public class RecommendationService {
     private final FilmService filmService;
     private final GenreService genreService;
 
-    // Получение рекомендаций для пользователя - ТЕПЕРЬ ВОЗВРАЩАЕМ List<Film>
     public List<Film> getRecommendations(Long userId) {
+        log.info("Начало получения рекомендаций для пользователя с ID: {}", userId);
         try {
             // Проверяем существование пользователя
+            log.debug("Проверка пользователя с ID: {}", userId);
             userStorage.getUserById(userId);
+            log.debug("Пользователь с ID: {} найден", userId);
 
             // Получаем рекомендации разными методами
-            List<Film> collaborativeFilms = statisticsRepository.getRecommendationsForUser(userId);
-            List<Film> genreBasedFilms = statisticsRepository.getGenreBasedRecommendations(userId);
+            log.debug("Получение коллаборативных рекомендаций для пользователя с ID: {}", userId);
+            List<Film> collaborativeFilms;
+            try {
+                collaborativeFilms = statisticsRepository.getRecommendationsForUser(userId);
+                log.debug("Коллаборативные рекомендации для пользователя с ID: {} получены, количество: {}",
+                        userId, collaborativeFilms.size());
+            } catch (Exception e) {
+                log.error("Ошибка при получении коллаборативных рекомендаций для пользователя {}: {}",
+                        userId, e.getMessage(), e);
+                collaborativeFilms = new ArrayList<>();
+            }
+
+            log.debug("Получение рекомендаций по жанрам для пользователя с ID: {}", userId);
+            List<Film> genreBasedFilms;
+            try {
+                genreBasedFilms = statisticsRepository.getGenreBasedRecommendations(userId);
+                log.debug("Рекомендации по жанрам для пользователя с ID: {} получены, количество: {}",
+                        userId, genreBasedFilms.size());
+            } catch (Exception e) {
+                log.error("Ошибка при получении рекомендаций по жанрам для пользователя {}: {}",
+                        userId, e.getMessage(), e);
+                genreBasedFilms = new ArrayList<>();
+            }
 
             // Объединяем и убираем дубликаты
             Set<Film> allRecommendations = new LinkedHashSet<>();
             allRecommendations.addAll(collaborativeFilms);
             allRecommendations.addAll(genreBasedFilms);
+            log.debug("Всего уникальных рекомендаций для пользователя с ID: {}: {}",
+                    userId, allRecommendations.size());
 
             // Обогащаем фильмы полной информацией и преобразуем в List
             List<Film> result = new ArrayList<>();
@@ -44,12 +69,15 @@ public class RecommendationService {
                     Film fullFilm = filmService.getFilmById(film.getId());
                     result.add(fullFilm);
                 } catch (Exception e) {
-                    log.warn("Фильм с id {} не найден, пропускаем", film.getId());
+                    log.warn("Фильм с id {} не найден, пропускаем. Ошибка: {}", film.getId(), e.getMessage());
                 }
             }
 
+            log.info("Рекомендации для пользователя с ID: {} успешно получены, количество: {}",
+                    userId, result.size());
             return result;
         } catch (ObjectNotFoundException e) {
+            log.error("Пользователь с ID: {} не найден", userId, e);
             throw e;
         } catch (Exception e) {
             log.error("Ошибка при получении рекомендаций для пользователя {}: {}", userId, e.getMessage(), e);
@@ -57,9 +85,8 @@ public class RecommendationService {
         }
     }
 
-    // Остальной код остается без изменений...
-    // Получение популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
+        log.info("Начало получения популярных фильмов: genreId={}, year={}, limit={}", genreId, year, limit);
         try {
             // Валидация параметров
             if (genreId != null && genreId <= 0) {
@@ -67,26 +94,33 @@ public class RecommendationService {
             }
 
             if (year != null && (year < 1895 || year > Calendar.getInstance().get(Calendar.YEAR) + 1)) {
-                throw new ObjectNotFoundException("Год должен быть в диапазоне 1895-" + (Calendar.getInstance().get(Calendar.YEAR) + 1));
+                throw new ObjectNotFoundException("Год должен быть в диапазоне 1895-" +
+                        (Calendar.getInstance().get(Calendar.YEAR) + 1));
             }
 
             if (limit == null || limit <= 0) {
                 limit = 10L;
+                log.debug("Лимит установлен по умолчанию: {}", limit);
             }
 
+            log.debug("Вызов statisticsRepository.getPopularFilmsByGenreAndYear");
             List<Film> films = statisticsRepository.getPopularFilmsByGenreAndYear(genreId, year, limit);
+            log.debug("Получено {} фильмов из репозитория", films.size());
 
             // Обогащаем фильмы полной информацией
             List<Film> result = new ArrayList<>();
             for (Film film : films) {
                 try {
-                    result.add(filmService.getFilmById(film.getId()));
+                    Film fullFilm = filmService.getFilmById(film.getId());
+                    result.add(fullFilm);
                 } catch (Exception e) {
-                    log.warn("Фильм с id {} не найден, пропускаем", film.getId());
+                    log.warn("Фильм с id {} не найден, пропускаем. Ошибка: {}", film.getId(), e.getMessage());
                 }
             }
+            log.info("Успешно возвращено {} популярных фильмов", result.size());
             return result;
         } catch (ObjectNotFoundException e) {
+            log.error("Ошибка валидации параметров: ", e);
             throw e;
         } catch (Exception e) {
             log.error("Ошибка при получении популярных фильмов: жанр={}, год={}, лимит={}: {}",

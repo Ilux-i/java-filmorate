@@ -24,6 +24,7 @@ public class StatisticsRepository {
 
     // Получение самых популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
+        log.debug("getPopularFilmsByGenreAndYear called with: genreId={}, year={}, limit={}", genreId, year, limit);
         String sql = "SELECT f.* " +
                 "FROM films f " +
                 "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
@@ -33,7 +34,15 @@ public class StatisticsRepository {
                 "GROUP BY f.id " +
                 "ORDER BY COUNT(l.id) DESC " +
                 "LIMIT ?";
-        return jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
+
+        try {
+            List<Film> result = jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
+            log.debug("getPopularFilmsByGenreAndYear returned {} films", result.size());
+            return result;
+        } catch (Exception e) {
+            log.error("Error in getPopularFilmsByGenreAndYear: ", e);
+            throw e;
+        }
     }
 
     // Получение статистики по жанрам и годам
@@ -53,6 +62,8 @@ public class StatisticsRepository {
 
     // Получение рекомендаций для пользователя на основе коллаборативной фильтрации
     public List<Film> getRecommendationsForUser(Long userId) {
+        log.debug("getRecommendationsForUser called with userId: {}", userId);
+
         // Находим пользователей с похожими вкусами
         String similarUsersSql = "SELECT l2.user_id " +
                 "FROM likes l1 " +
@@ -62,31 +73,46 @@ public class StatisticsRepository {
                 "GROUP BY l2.user_id " +
                 "ORDER BY COUNT(DISTINCT l1.film_id) DESC " +
                 "LIMIT 5";
-        List<Long> similarUserIds = jdbc.queryForList(similarUsersSql, Long.class, userId, userId);
-        if (similarUserIds.isEmpty()) {
-            return getPopularFilms(10L);
+
+        try {
+            List<Long> similarUserIds = jdbc.queryForList(similarUsersSql, Long.class, userId, userId);
+            log.debug("Found {} similar users for userId: {}", similarUserIds.size(), userId);
+
+            if (similarUserIds.isEmpty()) {
+                log.debug("No similar users found, returning popular films");
+                return getPopularFilms(10L);
+            }
+
+            // Находим фильмы, которые понравились похожим пользователям, но не текущему
+            String placeholders = String.join(",", Collections.nCopies(similarUserIds.size(), "?"));
+            String recommendationsSql = "SELECT f.* " +
+                    "FROM films f " +
+                    "JOIN likes l ON f.id = l.film_id " +
+                    "WHERE l.user_id IN (" + placeholders + ") " +
+                    "  AND f.id NOT IN ( " +
+                    "      SELECT film_id " +
+                    "      FROM likes " +
+                    "      WHERE user_id = ? " +
+                    "  ) " +
+                    "GROUP BY f.id " +
+                    "ORDER BY COUNT(l.id) DESC " +
+                    "LIMIT 10";
+
+            List<Object> params = new ArrayList<>(similarUserIds);
+            params.add(userId);
+
+            List<Film> result = jdbc.query(recommendationsSql, filmRowMapper, params.toArray());
+            log.debug("getRecommendationsForUser returned {} films for userId: {}", result.size(), userId);
+            return result;
+        } catch (Exception e) {
+            log.error("Error in getRecommendationsForUser for userId {}: ", userId, e);
+            return new ArrayList<>(); // Возвращаем пустой список вместо выброса исключения
         }
-        // Находим фильмы, которые понравились похожим пользователям, но не текущему
-        String placeholders = String.join(",", Collections.nCopies(similarUserIds.size(), "?"));
-        String recommendationsSql = "SELECT f.* " +
-                "FROM films f " +
-                "JOIN likes l ON f.id = l.film_id " +
-                "WHERE l.user_id IN (" + placeholders + ") " +
-                "  AND f.id NOT IN ( " +
-                "      SELECT film_id " +
-                "      FROM likes " +
-                "      WHERE user_id = ? " +
-                "  ) " +
-                "GROUP BY f.id " +
-                "ORDER BY COUNT(l.id) DESC " +
-                "LIMIT 10";
-        List<Object> params = new ArrayList<>(similarUserIds);
-        params.add(userId);
-        return jdbc.query(recommendationsSql, filmRowMapper, params.toArray());
     }
 
     // Получение рекомендаций на основе жанров пользователя
     public List<Film> getGenreBasedRecommendations(Long userId) {
+        log.debug("getGenreBasedRecommendations called with userId: {}", userId);
         String sql = "SELECT f.* " +
                 "FROM films f " +
                 "JOIN film_genre fg ON f.id = fg.film_id " +
@@ -108,18 +134,36 @@ public class StatisticsRepository {
                 "    WHERE l2.film_id = f.id " +
                 ") DESC " +
                 "LIMIT 10";
-        return jdbc.query(sql, filmRowMapper, userId, userId);
+
+        try {
+            List<Film> result = jdbc.query(sql, filmRowMapper, userId, userId);
+            log.debug("getGenreBasedRecommendations returned {} films for userId: {}", result.size(), userId);
+            return result;
+        } catch (Exception e) {
+            log.error("Error in getGenreBasedRecommendations for userId {}: ", userId, e);
+            return new ArrayList<>(); // Возвращаем пустой список вместо выброса исключения
+        }
     }
+
 
     // Получение популярных фильмов
     private List<Film> getPopularFilms(Long limit) {
+        log.debug("getPopularFilms called with limit: {}", limit);
         String sql = "SELECT f.* " +
                 "FROM films f " +
                 "LEFT JOIN likes l ON f.id = l.film_id " +
                 "GROUP BY f.id " +
                 "ORDER BY COUNT(l.id) DESC " +
                 "LIMIT ?";
-        return jdbc.query(sql, filmRowMapper, limit);
+
+        try {
+            List<Film> result = jdbc.query(sql, filmRowMapper, limit);
+            log.debug("getPopularFilms returned {} films", result.size());
+            return result;
+        } catch (Exception e) {
+            log.error("Error in getPopularFilms: ", e);
+            return new ArrayList<>();
+        }
     }
 
     // Маппер для статистики
