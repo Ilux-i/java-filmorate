@@ -9,8 +9,8 @@ import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -27,6 +27,8 @@ public class UserService {
 
     @Autowired
     private final UserStorage userStorage;
+    @Autowired
+    private final FeedDBStorage feedDBStorage;
     @Autowired
     private FriendsRepository friendsRepository;
 
@@ -96,6 +98,7 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         long id = userStorage.addFriend(mapToAllFriendDto(idUser, idFriend));
+        feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.ADD, idFriend);
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
         return user;
     }
@@ -105,6 +108,7 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
+            feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.REMOVE, idFriend);
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }
     }
@@ -158,5 +162,10 @@ public class UserService {
                         .stream()
                         .filter(friends::contains)
                         .toList());
+    }
+
+    // Получение новостной ленты пользователя по его id
+    public Collection<Feed> getFeed(long userId) {
+        return feedDBStorage.getFeed(userId);
     }
 }
