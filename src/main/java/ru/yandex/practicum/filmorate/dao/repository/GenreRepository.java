@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class GenreRepository extends BaseRepository<Genre> {
     private static final String FIND_BY_ID_QUERY = "SELECT * FROM genres WHERE id = ?";
     private static final String FIND_ALL_QUERY = "SELECT * FROM genres order by id";
 
-    public GenreRepository(JdbcTemplate jdbc, RowMapper<Genre> mapper) {
+    public GenreRepository(JdbcTemplate jdbc, GenreRowMapper mapper) {
         super(jdbc, mapper);
     }
 

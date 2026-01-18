@@ -4,6 +4,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.filmorate.dao.mappers.FriendRowMapper;
 import ru.yandex.practicum.filmorate.dto.friend.AllFriendDto;
 import ru.yandex.practicum.filmorate.dto.friend.PairFriendDto;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
@@ -34,7 +35,7 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
     private static final String REMOVE_FRIEND_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
     private static final String DELETE_BY_LIST_QUERY = "DELETE FROM friends WHERE ";
 
-    public FriendsRepository(JdbcTemplate jdbc, RowMapper<AllFriendDto> mapper) {
+    public FriendsRepository(JdbcTemplate jdbc, FriendRowMapper mapper) {
         super(jdbc, mapper);
     }
 
