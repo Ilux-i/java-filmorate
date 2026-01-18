@@ -10,6 +10,7 @@ import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
@@ -136,7 +137,31 @@ public class FilmDbStorage implements FilmStorage {
     // Удаления лайка
     @Override
     public boolean removeLike(long userId, long filmId) {
-        return likeRepository.remove(userId, filmId);
+        return likeRepository.remove(filmId, userId);
+    }
+
+    // Получение общих фильмов
+    @Override
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        // Получаем фильмы из репозитория
+        List<Film> films = filmRepository.getCommonFilms(userId, friendId);
+
+        for (Film film : films) {
+            // Заполняем жанры
+            film.setGenres(filmGenreRepository.findAllByFilm(film.getId()).stream()
+                    .map(dto -> genreService.getGenre(dto.getGenreId()))
+                    .collect(Collectors.toSet()));
+
+            // Заполняем MPA полностью
+            Mpa fullMpa = mpaService.getMpa(film.getMpa().getId());
+            film.setMpa(fullMpa);
+
+            // Заполняем лайки
+            film.setLikes(likeRepository.findAllByFilm(film.getId()).stream()
+                    .map(LikeDto::getUserId)
+                    .collect(Collectors.toSet()));
+        }
+        return films;
     }
 
 }
