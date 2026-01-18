@@ -24,14 +24,14 @@ public class StatisticsRepository {
 
     // Получение самых популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
-        String sql = "SELECT f.* " +
-                     "FROM films f " +
-                     "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
-                     "LEFT JOIN likes l ON f.id = l.film_id " +
-                     "WHERE (? IS NULL OR fg.genre_id = ?) " +
-                     "  AND (? IS NULL OR YEAR(f.releaseDate) = ?) " +
-                     "GROUP BY f.id " +
-                     "ORDER BY COUNT(l.id) DESC " +
+        String sql = "SELECT f.*" +
+                     "FROM films f" +
+                     "LEFT JOIN film_genre fg ON f.id = fg.film_id" +
+                     "LEFT JOIN likes l ON f.id = l.film_id" +
+                     "WHERE (? IS NULL OR fg.genre_id = ?)" +
+                     "AND (? IS NULL OR YEAR(f.releaseDate) = ?)" +
+                     "GROUP BY f.id" +
+                     "ORDER BY COUNT(l.id) DESC" +
                      "LIMIT ?";
 
         return jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
@@ -39,11 +39,11 @@ public class StatisticsRepository {
 
     // Получение статистики по жанрам и годам
     public List<GenreYearStatistic> getGenreYearStatistics() {
-        String sql = "SELECT YEAR(f.releaseDate) as year, " +
-                     "       fg.genre_id as genreId, " +
-                     "       COUNT(DISTINCT l.id) as likeCount, " +
-                     "       COUNT(DISTINCT f.id) as filmCount " +
-                     "FROM films f " +
+        String sql = "SELECT YEAR(f.releaseDate) as year," +
+                     "fg.genre_id as genreId," +
+                     "COUNT(DISTINCT l.id) as likeCount," +
+                     "COUNT(DISTINCT f.id) as filmCount" +
+                     "FROM films f" +
                      "LEFT JOIN film_genre fg ON f.id = fg.film_id " +
                      "LEFT JOIN likes l ON f.id = l.film_id " +
                      "WHERE fg.genre_id IS NOT NULL " +
