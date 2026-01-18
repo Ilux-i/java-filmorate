@@ -22,7 +22,7 @@ public class RatingRepository extends BaseRepository<Mpa> {
         return findOne(FIND_BY_ID_QUERY, ratingId);
     }
 
-    // Получение списка всех рейтингов
+    // Получение списка всех рейтингов в порядке убывания
     public List<Mpa> findAll() {
         return findMany(FIND_ALL_QUERY);
     }

@@ -17,6 +17,9 @@ public interface FilmStorage {
     // Обновление фильма
     Film updateFilm(final Film film);
 
+    // Удаление фильма
+    void deleteFilm(long id);
+
     // Получение фильма
     Film getFilmById(long filmId);
 
@@ -25,9 +28,6 @@ public interface FilmStorage {
 
     // Получение всех фильмов
     HashMap<Long, Film> getAllFilms();
-
-    // Удаление фильма
-    boolean removeFilm(Film film);
 
     // Получение списка жанров по фильму
     Set<Genre> getGenresByFilm(long filmId);
@@ -52,4 +52,9 @@ public interface FilmStorage {
     // Удаления лайка
     boolean removeLike(long userId, long filmId);
 
+    // Получение общих фильмов
+    List<Film> getCommonFilms(long userId, long friendId);
+
+    // Получение фильмов по режиссёру
+    Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy);
 }

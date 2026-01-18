@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
-import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -72,6 +71,19 @@ public class UserService {
             log.info("User does not have an Id");
             throw new ObjectNotFoundException("Id is missing");
         }
+    }
+
+    // Удаление пользователя
+    public void remove(long id) {
+        if (!userStorage.contains(id)) {
+            throw new ObjectNotFoundException("Пользователя с таким id не найдено");
+        }
+        userStorage.deleteUser(id);
+    }
+
+    // Получение пользователя по id
+    public User getUserById(final long id) {
+        return userStorage.getUserById(id);
     }
 
     // Получение всех пользователей
