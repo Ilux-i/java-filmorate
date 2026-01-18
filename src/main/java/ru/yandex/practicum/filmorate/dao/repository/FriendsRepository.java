@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.dao.mappers.FriendRowMapper;
