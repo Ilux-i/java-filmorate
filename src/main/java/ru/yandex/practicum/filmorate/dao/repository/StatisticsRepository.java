@@ -25,7 +25,7 @@ public class StatisticsRepository {
     // Получение самых популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
         String sql = """
-                SELECT f.* 
+                SELECT f.*\s
                 FROM films f
                 LEFT JOIN film_genre fg ON f.id = fg.film_id
                 LEFT JOIN likes l ON f.id = l.film_id
@@ -34,7 +34,7 @@ public class StatisticsRepository {
                 GROUP BY f.id
                 ORDER BY COUNT(l.id) DESC
                 LIMIT ?
-                """;
+               \s""";
 
         return jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
     }
@@ -42,7 +42,7 @@ public class StatisticsRepository {
     // Получение статистики по жанрам и годам
     public List<GenreYearStatistic> getGenreYearStatistics() {
         String sql = """
-                SELECT 
+                SELECT
                     YEAR(f.releaseDate) as year,
                     fg.genre_id as genreId,
                     COUNT(DISTINCT l.id) as likeCount,
@@ -89,8 +89,8 @@ public class StatisticsRepository {
                 JOIN likes l ON f.id = l.film_id
                 WHERE l.user_id IN (%s)
                   AND f.id NOT IN (
-                      SELECT film_id 
-                      FROM likes 
+                      SELECT film_id
+                      FROM likes
                       WHERE user_id = ?
                   )
                 GROUP BY f.id
@@ -117,8 +117,8 @@ public class StatisticsRepository {
                     WHERE l.user_id = ?
                 )
                 AND f.id NOT IN (
-                    SELECT film_id 
-                    FROM likes 
+                    SELECT film_id
+                    FROM likes
                     WHERE user_id = ?
                 )
                 GROUP BY f.id
@@ -136,7 +136,7 @@ public class StatisticsRepository {
     // Получение популярных фильмов
     private List<Film> getPopularFilms(Long limit) {
         String sql = """
-                SELECT f.* 
+                SELECT f.*
                 FROM films f
                 LEFT JOIN likes l ON f.id = l.film_id
                 GROUP BY f.id
