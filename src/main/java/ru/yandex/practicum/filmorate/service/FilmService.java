@@ -75,6 +75,11 @@ public class FilmService {
         }
     }
 
+    // Удаление фильма
+    public void remove(long id) {
+        filmStorage.deleteFilm(id);
+    }
+
     // Получение фильма по id
     public Film getFilmById(final long id) {
         return filmStorage.getFilmById(id);

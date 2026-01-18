@@ -34,6 +34,11 @@ public class UserDbStorage implements UserStorage {
         return userRepository.update(user);
     }
 
+    @Override
+    public void deleteUser(long id) {
+        userRepository.remove(id);
+    }
+
     // Получение пользователя
     @Override
     public User getUserById(long userId) {
@@ -98,12 +103,6 @@ public class UserDbStorage implements UserStorage {
         return result;
     }
 
-    // Удаление пользователя
-    @Override
-    public boolean removeUser(User user) {
-        return userRepository.remove(user.getId());
-    }
-
     // Добавление в друзья
     @Override
     public long addFriend(AllFriendDto dto) {
@@ -138,6 +137,11 @@ public class UserDbStorage implements UserStorage {
     @Override
     public boolean removeFriend(PairFriendDto dto) {
         return friendsRepository.remove(dto);
+    }
+
+    @Override
+    public boolean contains(long id) {
+        return userRepository.contains(id);
     }
 
 }

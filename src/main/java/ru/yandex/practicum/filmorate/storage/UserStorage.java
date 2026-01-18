@@ -14,15 +14,15 @@ public interface UserStorage {
 
     User updateUser(final User user);
 
+    // Удаление пользователя
+    void deleteUser(long id);
+
     User getUserById(long userId);
 
     // Получение списка пользоватеелеей по списку userId
     List<User> getUsersByListId(List<Long> usersId);
 
     HashMap<Long, User> getAllUsers();
-
-    // Удаление пользователя
-    boolean removeUser(User user);
 
     long addFriend(AllFriendDto dto);
 
@@ -37,4 +37,6 @@ public interface UserStorage {
 
     // Удаление друга
     boolean removeFriend(PairFriendDto dto);
+
+    boolean contains(long id);
 }

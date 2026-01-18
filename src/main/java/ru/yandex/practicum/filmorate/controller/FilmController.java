@@ -29,6 +29,12 @@ public class FilmController {
         return filmService.updateFilm(film);
     }
 
+    // Удаление фильма
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable long id) {
+        filmService.remove(id);
+    }
+
     // Добавление лайка к фильму от пользователя по их id соответственно
     @PutMapping("/{filmId}/like/{userId}")
     public Film addLike(@PathVariable final long filmId, @PathVariable final long userId) {

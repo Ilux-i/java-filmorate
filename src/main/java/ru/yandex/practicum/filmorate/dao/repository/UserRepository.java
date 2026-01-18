@@ -21,6 +21,7 @@ public class UserRepository extends BaseRepository<User> {
             "VALUES (?, ?, ?, ?)";
     private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
     private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
+    private static final String EXISTS = "SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)";
 
     public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
         super(jdbc, mapper);
@@ -72,8 +73,11 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     // Удаление пользователя
-    public boolean remove(long userId) {
-        return delete(DELETE_QUERY, userId);
+    public void remove(long userId) {
+        delete(DELETE_QUERY, userId);
     }
 
+    public boolean contains(long id) {
+        return jdbc.queryForObject(EXISTS, Boolean.class, id);
+    }
 }

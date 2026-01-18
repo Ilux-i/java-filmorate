@@ -28,10 +28,22 @@ public class UserController {
         return userService.updateUser(user);
     }
 
+    // Удаление пользователя
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable long id) {
+        userService.remove(id);
+    }
+
     // Добавление в друзья
     @PutMapping("/{id}/friends/{friendId}")
     public User addFriends(@PathVariable final long id, @PathVariable final long friendId) {
         return userService.addFriend(id, friendId);
+    }
+
+    // Получение пользователя по его id
+    @GetMapping("/{userId}")
+    public User getFilm(@PathVariable final long userId) {
+        return userService.getUserById(userId);
     }
 
     // Получение всех пользователей
