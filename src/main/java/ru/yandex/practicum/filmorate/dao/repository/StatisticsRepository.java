@@ -24,17 +24,15 @@ public class StatisticsRepository {
 
     // Получение самых популярных фильмов по жанру и году
     public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
-        String sql = """
-                 SELECT f.*
-                 FROM films f
-                 LEFT JOIN film_genre fg ON f.id = fg.film_id
-                 LEFT JOIN likes l ON f.id = l.film_id
-                 WHERE (? IS NULL OR fg.genre_id = ?)
-                   AND (? IS NULL OR YEAR(f.releaseDate) = ?)
-                 GROUP BY f.id
-                 ORDER BY COUNT(l.id) DESC
-                 LIMIT ?
-                """;
+        String sql = " SELECT f.*\n" +
+                     " FROM films f\n" +
+                     " LEFT JOIN film_genre fg ON f.id = fg.film_id\n" +
+                     " LEFT JOIN likes l ON f.id = l.film_id\n" +
+                     " WHERE (? IS NULL OR fg.genre_id = ?)\n" +
+                     " AND (? IS NULL OR YEAR(f.releaseDate) = ?)\n" +
+                     " GROUP BY f.id\n" +
+                     " ORDER BY COUNT(l.id) DESC\n" +
+                     " LIMIT ?\n";
 
         return jdbc.query(sql, filmRowMapper, genreId, genreId, year, year, limit);
     }
