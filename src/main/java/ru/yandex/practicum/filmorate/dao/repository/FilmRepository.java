@@ -31,7 +31,7 @@ public class FilmRepository extends BaseRepository<Film> {
         super(jdbc, mapper);
     }
 
-    // Получение  всех фильмов
+    // Получение всех фильмов
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
