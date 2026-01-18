@@ -16,13 +16,13 @@ public class FilmRowMapper implements RowMapper<Film> {
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Timestamp releaseDate = resultSet.getTimestamp("releaseDate");
         return Film.builder()
-                .id(resultSet.getLong("id"))
+                .id(resultSet.getLong("id"))  // Используйте getLong для Long полей
                 .name(resultSet.getString("name"))
                 .description(resultSet.getString("description"))
                 .releaseDate(LocalDate.from(releaseDate.toLocalDateTime()))
                 .duration(resultSet.getInt("duration"))
                 .mpa(Mpa.builder()
-                        .id(resultSet.getInt("rating_id"))
+                        .id(resultSet.getLong("rating_id"))  // Если rating_id тоже Long
                         .build())
                 .build();
     }

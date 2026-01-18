@@ -1,11 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
-import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
@@ -21,10 +21,11 @@ import java.util.stream.Collectors;
 import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToAllFriendDto;
 import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFriendDto;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
+
+    private static final Logger log = LoggerFactory.getLogger(UserService.class);  // Явное объявление логгера
 
     @Autowired
     private final UserStorage userStorage;
@@ -60,7 +61,7 @@ public class UserService {
             User result = UserMapper.updateUserFields(oldUser, updateUser);
             // Проверка валидации
             if (valid(result)) {
-                if (!result.getFriends().isEmpty()) {
+                if (result.getFriends() != null && !result.getFriends().isEmpty()) {
                     updateFriends(result.getId(), result.getFriends());
                 }
                 return userStorage.updateUser(result);
@@ -116,23 +117,23 @@ public class UserService {
 
         // Список друзей на добавление
         Set<Long> toAdd = friends.keySet().stream()
-                .filter(genre -> !oldFriends.contains(genre))
+                .filter(friend -> !oldFriends.contains(friend))
                 .collect(Collectors.toSet());
 
-        friendsRepository.removeFriendsByListId(toRemove.stream().map(friend -> mapToUserPairFriendDto(userId, friend)).toList());
-        friendsRepository.addFriendsByListId(toAdd.stream().map(friend -> mapToUserPairFriendDto(userId, friend)).toList());
+        friendsRepository.removeFriendsByListId(toRemove.stream()
+                .map(friend -> mapToUserPairFriendDto(userId, friend))
+                .toList());
+        friendsRepository.addFriendsByListId(toAdd.stream()
+                .map(friend -> mapToUserPairFriendDto(userId, friend))
+                .toList());
     }
 
-//    // Подтверждение запроса добавления в друзья
-//    public long confirmedFriend(final long idUser, final long idFriend) {
-//        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
-//    }
-
     private static boolean valid(User user) {
-        return !user.getEmail().isEmpty() &&
+        return user.getEmail() != null && !user.getEmail().isEmpty() &&
                 user.getEmail().contains("@") &&
-                !user.getLogin().isEmpty() &&
+                user.getLogin() != null && !user.getLogin().isEmpty() &&
                 !user.getLogin().contains(" ") &&
+                user.getBirthday() != null &&
                 user.getBirthday().isBefore(LocalDate.now());
     }
 

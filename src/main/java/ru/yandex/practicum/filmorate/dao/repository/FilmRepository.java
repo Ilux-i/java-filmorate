@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -26,12 +26,17 @@ public class FilmRepository extends BaseRepository<Film> {
             "group by f.ID " +
             "order by count(l.ID) desc " +
             "LIMIT ?";
+    private static final String COMMON_FILMS_QUERY =
+            "SELECT * FROM films f " +
+                    "WHERE f.id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                    "AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                    "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC";
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    public FilmRepository(JdbcTemplate jdbc, FilmRowMapper mapper) {
         super(jdbc, mapper);
     }
 
-    // Получение  всех фильмов
+    // Получение всех фильмов
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
@@ -80,5 +85,10 @@ public class FilmRepository extends BaseRepository<Film> {
     // Удаление фильма по id
     public boolean remove(long filmId) {
         return delete(DELETE_QUERY, filmId);
+    }
+
+    //Получение общих фильмов
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(COMMON_FILMS_QUERY, userId, friendId);
     }
 }
