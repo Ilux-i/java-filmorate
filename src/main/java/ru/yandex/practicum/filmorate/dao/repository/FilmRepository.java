@@ -27,6 +27,11 @@ public class FilmRepository extends BaseRepository<Film> {
                     "GROUP BY f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
                     "ORDER BY COUNT(l.ID) DESC " +
                     "LIMIT ?";
+    private static final String COMMON_FILMS_QUERY =
+            "SELECT * FROM films f " +
+                    "WHERE f.id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                    "AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?) " +
+                    "ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC";
 
     public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
         super(jdbc, mapper);
@@ -81,5 +86,10 @@ public class FilmRepository extends BaseRepository<Film> {
     // Удаление фильма по id
     public void remove(long filmId) {
         delete(DELETE_QUERY, filmId);
+    }
+
+    //Получение общих фильмов
+    public List<Film> getCommonFilms(long userId, long friendId) {
+        return findMany(COMMON_FILMS_QUERY, userId, friendId);
     }
 }
