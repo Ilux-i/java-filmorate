@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
@@ -10,8 +9,8 @@ import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -21,14 +20,15 @@ import java.util.stream.Collectors;
 import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToAllFriendDto;
 import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFriendDto;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);  // Явное объявление логгера
-
     @Autowired
     private final UserStorage userStorage;
+    @Autowired
+    private final FeedDBStorage feedDBStorage;
     @Autowired
     private FriendsRepository friendsRepository;
 
@@ -98,6 +98,8 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         long id = userStorage.addFriend(mapToAllFriendDto(idUser, idFriend));
+        // Вносим в ленту новостей пользователя информацию об добавлении в друзья
+        feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.ADD, idFriend);
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
         return user;
     }
@@ -107,6 +109,8 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
+            // Вносим в ленту новостей пользователя информацию об удалении из друзей
+            feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.REMOVE, idFriend);
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }
     }
@@ -141,6 +145,11 @@ public class UserService {
                 .toList());
     }
 
+//    // Подтверждение запроса добавления в друзья
+//    public long confirmedFriend(final long idUser, final long idFriend) {
+//        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
+//    }
+
     private static boolean valid(User user) {
         return user.getEmail() != null && !user.getEmail().isEmpty() &&
                 user.getEmail().contains("@") &&
@@ -160,5 +169,10 @@ public class UserService {
                         .stream()
                         .filter(friends::contains)
                         .toList());
+    }
+
+    // Получение новостной ленты пользователя по его id
+    public Collection<Feed> getFeed(long userId) {
+        return feedDBStorage.getFeed(userId);
     }
 }

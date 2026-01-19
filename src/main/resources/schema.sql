@@ -100,3 +100,17 @@ CREATE TABLE IF NOT EXISTS review_likes (
     is_like BOOLEAN NOT NULL,
     UNIQUE(review_id, user_id)
 );
+
+-- Объявление ENUM
+CREATE TYPE event_type_enum AS ENUM ('LIKE', 'REVIEW', 'FRIEND');
+CREATE TYPE operation_enum AS ENUM ('REMOVE', 'ADD', 'UPDATE');
+
+CREATE TABLE IF NOT EXISTS feeds
+(
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    timestamp BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    event_type event_type_enum NOT NULL,
+    operation operation_enum NOT NULL,
+    entity_id BIGINT NOT NULL
+);
