@@ -57,4 +57,13 @@ public interface FilmStorage {
 
     // Получение фильмов по режиссёру
     Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy);
+
+    // Поиск фильмов по названию
+    Collection<Film> searchByTitle(String lowerCase);
+
+    // Поиск фильмов по режиссёру
+    Collection<Film> searchByDirector(String query);
+
+    // Поиск фильмов по режиссёру и названию
+    Collection<Film> searchByAll(String query);
 }

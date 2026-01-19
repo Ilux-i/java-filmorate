@@ -58,6 +58,63 @@ public class FilmRepository extends BaseRepository<Film> {
             "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id " +
             "ORDER BY EXTRACT(YEAR FROM f.releaseDate); ";
 
+    private static final String GET_FILMS_BY_TITLE = """
+            SELECT
+                f.id,
+                f.name as title,
+                f.description,
+                f.releaseDate,
+                f.duration,
+                f.rating_id,
+                COUNT(l.id) as likes_count
+            FROM films as f
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%'))
+            GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id
+            ORDER BY COUNT(l.id) DESC""";
+
+    private static final String GET_FILMS_BY_DIRECTOR = """
+            SELECT
+                f.id,
+                f.name as title,
+                f.description,
+                f.releaseDate,
+                f.duration,
+                f.rating_id,
+                STRING_AGG(DISTINCT d.name, ', ') as directors,
+                COUNT(DISTINCT l.id) as likes_count
+            FROM films as f
+            LEFT JOIN film_director as fd ON fd.film_id = f.id
+            LEFT JOIN directors as d ON d.id = fd.director_id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%'))
+            GROUP BY f.id
+            ORDER BY COUNT(DISTINCT l.id) DESC""";
+
+    private static final String GET_FILMS_BY_TITLE_OR_DIRECTOR = """
+            SELECT
+                f.id,
+                f.name as title,
+                f.description,
+                f.releaseDate,
+                f.duration,
+                f.rating_id,
+                (SELECT GROUP_CONCAT(d.name SEPARATOR ', ')
+                 FROM film_director fd2
+                 JOIN directors d ON d.id = fd2.director_id
+                 WHERE fd2.film_id = f.id) as directors,
+                COUNT(DISTINCT l.id) as likes_count
+            FROM films as f
+            LEFT JOIN film_director as fd ON fd.film_id = f.id
+            LEFT JOIN directors as d ON d.id = fd.director_id
+            LEFT JOIN likes l ON f.id = l.film_id
+            WHERE
+                (LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%'))
+                OR
+                LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%')))
+            GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id
+            ORDER BY COUNT(DISTINCT l.id) DESC""";
+
     public FilmRepository(JdbcTemplate jdbc, FilmRowMapper mapper) {
         super(jdbc, mapper);
     }
@@ -125,5 +182,20 @@ public class FilmRepository extends BaseRepository<Film> {
             return findMany(GET_FILMS_BY_DIRECTOR_BY_YEAR, directorId);
         }
         return null;
+    }
+
+    // Поиск фильмов по названию
+    public Collection<Film> searchByTitle(String query) {
+        return findMany(GET_FILMS_BY_TITLE, query);
+    }
+
+    // Поиск фильмов по режиссёру
+    public Collection<Film> searchByDirector(String query) {
+        return findMany(GET_FILMS_BY_DIRECTOR, query);
+    }
+
+    // Поиск фильмов по режиссёру
+    public Collection<Film> searchByAll(String query) {
+        return findMany(GET_FILMS_BY_TITLE_OR_DIRECTOR, query, query);
     }
 }

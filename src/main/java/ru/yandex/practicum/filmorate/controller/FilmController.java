@@ -60,6 +60,7 @@ public class FilmController {
         return filmService.getPopularFilms(count);
     }
 
+    // Получение фильмов по режиссёру
     @GetMapping("/director/{directorId}")
     public Collection<Film> getFilmsByDirector(@PathVariable Long directorId,
                                                @RequestParam(required = false) List<String> sortBy) {
@@ -76,5 +77,12 @@ public class FilmController {
     @GetMapping("/common")
     public Collection<Film> getCommonFilms(@RequestParam final long userId, @RequestParam final long friendId) {
         return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam("query") String query,
+            @RequestParam(value = "by", required = false, defaultValue = "title") String by) {
+        return filmService.searchFilms(query, by);
     }
 }

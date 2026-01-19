@@ -224,4 +224,30 @@ public class FilmService {
     public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
+
+    // Поиск фильмов по аргументам
+    public Collection<Film> searchFilms(String query, String by) {
+        return switch (by) {
+            case "title" -> searchByTitle(query);
+            case "director" -> searchByDirector(query);
+            case "title,director", "director,title" -> searchByDirectorAndTitle(query);
+            default -> throw new ValidationException("Нет поиска по " + by + " аргументу");
+        };
+    }
+
+    // Поиск фильмов по названию
+    private Collection<Film> searchByTitle(String query) {
+        return filmStorage.searchByTitle(query.toLowerCase());
+    }
+
+    // Поиск фильмов по режиссёру
+    private Collection<Film> searchByDirector(String query) {
+        return filmStorage.searchByDirector(query);
+    }
+
+    // Поиск фильмов по режиссёру и названию
+    private Collection<Film> searchByDirectorAndTitle(String query) {
+        return filmStorage.searchByAll(query);
+    }
+
 }
