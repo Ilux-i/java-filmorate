@@ -37,16 +37,6 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler
-    public ErrorResponse handleInternalServerException(final InternalServerException e) {
-        log.error("InternalServerException: ", e);
-        return ErrorResponse.create(
-                e,
-                HttpStatusCode.valueOf(500),
-                "Внутренняя ошибка сервера: " + e.getMessage()
-        );
-    }
-
-    @ExceptionHandler
     public ErrorResponse handleOtherException(final Throwable e) {
         log.error("Unexpected exception: ", e);
         return ErrorResponse.create(
