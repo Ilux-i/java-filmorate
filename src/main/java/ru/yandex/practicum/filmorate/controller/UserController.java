@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.service.RecommendationService; // Добавьте этот импорт
@@ -46,7 +47,7 @@ public class UserController {
 
     // Получение пользователя по его id
     @GetMapping("/{userId}")
-    public User getFilm(@PathVariable final long userId) {
+    public User getUserById(@PathVariable final long userId) {
         return userService.getUserById(userId);
     }
 
@@ -80,4 +81,12 @@ public class UserController {
         log.info("Получение рекомендаций для пользователя с ID: {}", userId);
         return recommendationService.getRecommendations(userId);
     }
+
+    // Получение новостной ленты пользователя по его id
+    @GetMapping("/{userId}/feed")
+    public Collection<Feed> getFeed(@PathVariable final long userId) {
+        return userService.getFeed(userId);
+    }
+
+
 }

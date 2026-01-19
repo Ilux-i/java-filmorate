@@ -10,9 +10,12 @@ import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
 import ru.yandex.practicum.filmorate.dto.film_director.FilmDirectorDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -42,6 +45,8 @@ public class FilmService {
     private final FilmStorage filmStorage;
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
+    @Qualifier("FeedDbStorage")
+    private final FeedDBStorage feedDBStorage;
 
     private final FilmDirectorRepository filmDirectorRepository;
     private final DirectorRepository directorRepository;
@@ -122,6 +127,8 @@ public class FilmService {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         filmStorage.setLike(userId, filmId);
+        // Вносим в ленту новостей пользователя информацию об добавлении лайка фильму
+        feedDBStorage.addFeed(userId, EventType.LIKE, Operation.ADD, filmId);
         log.info("Пользователь с id: {}, поставил лайк на фильм с id: {}", userId, filmId);
         return film;
     }
@@ -132,6 +139,8 @@ public class FilmService {
         userStorage.getUserById(userId);
 
         if (filmStorage.removeLike(userId, filmId)) {
+            // Вносим в ленту новостей пользователя информацию об удалении лайка у фильма
+            feedDBStorage.addFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
             log.info("Пользователь с id: {}, удалил лайк на фильм с id: {}", userId, filmId);
         } else {
             log.info("Пользователь с id: {}, не ставил лайк на фильм с id: {}", userId, filmId);
