@@ -81,8 +81,9 @@ public class UserController {
         log.info("Получение рекомендаций для пользователя с ID: {}", userId);
         return recommendationService.getRecommendations(userId);
     }
+
     // Получение новостной ленты пользователя по его id
-    @GetMapping("/{userId}//feed")
+    @GetMapping("/{userId}/feed")
     public Collection<Feed> getFeed(@PathVariable final long userId) {
         return userService.getFeed(userId);
     }

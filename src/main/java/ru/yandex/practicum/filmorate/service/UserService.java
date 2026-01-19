@@ -1,8 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
@@ -25,8 +24,6 @@ import static ru.yandex.practicum.filmorate.mapper.FriendMapper.mapToUserPairFri
 @Service
 @RequiredArgsConstructor
 public class UserService {
-
-    private static final Logger log = LoggerFactory.getLogger(UserService.class);  // Явное объявление логгера
 
     @Autowired
     private final UserStorage userStorage;
@@ -101,6 +98,7 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         long id = userStorage.addFriend(mapToAllFriendDto(idUser, idFriend));
+        // Вносим в ленту новостей пользователя информацию об добавлении в друзья
         feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.ADD, idFriend);
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
         return user;
@@ -111,6 +109,7 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
+            // Вносим в ленту новостей пользователя информацию об удалении из друзей
             feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.REMOVE, idFriend);
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }

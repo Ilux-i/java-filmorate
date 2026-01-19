@@ -8,9 +8,15 @@ import ru.yandex.practicum.filmorate.model.Feed;
 import java.util.List;
 
 @Repository
-public class FeedRepository extends BaseRepository<Feed>{
+public class FeedRepository extends BaseRepository<Feed> {
 
-    private static final String FIND_BY_USER_ID_QUERY = "SELECT * FROM feeds WHERE user_id = ? ORDER BY timestamp DESC";
+    private static final String FIND_BY_USER_ID_QUERY = """
+            SELECT *
+            FROM feeds
+            WHERE user_id = ?
+            ORDER BY timestamp
+            """;
+
     private static final String INSERT_QUERY = """
             INSERT INTO feeds (timestamp, user_id, event_type, operation, entity_id)
             VALUES (?, ?, ?, ?, ?)
@@ -27,9 +33,7 @@ public class FeedRepository extends BaseRepository<Feed>{
 
     // Добавление события
     public Feed add(Feed feed) {
-
-        long id = insert(
-                INSERT_QUERY,
+        long id = insert(INSERT_QUERY,
                 feed.getTimestamp(),
                 feed.getUserId(),
                 feed.getEventType().name(),
@@ -39,8 +43,4 @@ public class FeedRepository extends BaseRepository<Feed>{
         feed.setEventId(id);
         return feed;
     }
-
-
-
-
 }

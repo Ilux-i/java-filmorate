@@ -127,6 +127,7 @@ public class FilmService {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         filmStorage.setLike(userId, filmId);
+        // Вносим в ленту новостей пользователя информацию об добавлении лайка фильму
         feedDBStorage.addFeed(userId, EventType.LIKE, Operation.ADD, filmId);
         log.info("Пользователь с id: {}, поставил лайк на фильм с id: {}", userId, filmId);
         return film;
@@ -138,6 +139,7 @@ public class FilmService {
         userStorage.getUserById(userId);
 
         if (filmStorage.removeLike(userId, filmId)) {
+            // Вносим в ленту новостей пользователя информацию об удалении лайка у фильма
             feedDBStorage.addFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
             log.info("Пользователь с id: {}, удалил лайк на фильм с id: {}", userId, filmId);
         } else {

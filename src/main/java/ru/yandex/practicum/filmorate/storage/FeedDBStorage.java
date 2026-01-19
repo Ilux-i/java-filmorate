@@ -7,9 +7,7 @@ import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Operation;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 @Component("FeedDbStorage")
 @RequiredArgsConstructor

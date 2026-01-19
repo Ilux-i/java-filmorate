@@ -101,12 +101,16 @@ CREATE TABLE IF NOT EXISTS review_likes (
     UNIQUE(review_id, user_id)
 );
 
-create TABLE IF NOT EXISTS feeds
+-- Объявление ENUM
+CREATE TYPE event_type_enum AS ENUM ('LIKE', 'REVIEW', 'FRIEND');
+CREATE TYPE operation_enum AS ENUM ('REMOVE', 'ADD', 'UPDATE');
+
+CREATE TABLE IF NOT EXISTS feeds
 (
-    event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
-    timestamp INTEGER not null,
-    user_id INTEGER not null,
-    event_type ENUM('LIKE', 'REVIEW', 'FRIEND') not null,
-    operation ENUM('REMOVE', 'ADD', 'UPDATE') not null,
-    entity_id INTEGER not null
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    timestamp BIGINT NOT NULL,
+    user_id BIGINT NOT NULL,
+    event_type event_type_enum NOT NULL,
+    operation operation_enum NOT NULL,
+    entity_id BIGINT NOT NULL
 );

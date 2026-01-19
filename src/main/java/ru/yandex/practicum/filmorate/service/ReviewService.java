@@ -2,12 +2,16 @@ package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dto.review.ReviewRequest;
 import ru.yandex.practicum.filmorate.dto.review.ReviewUpdateRequest;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -27,6 +31,9 @@ public class ReviewService {
     @Qualifier("FilmDbStorage")
     private final FilmStorage filmStorage;
 
+    @Autowired
+    private final FeedDBStorage feedDBStorage;
+
     // Создание отзыва
     public Review createReview(ReviewRequest request) {
         // Валидация обязательных полей
@@ -42,6 +49,8 @@ public class ReviewService {
         }
 
         Review review = reviewStorage.createReview(request);
+        // Вносим в ленту новостей пользователя информацию об создании отзыва
+        feedDBStorage.addFeed(request.getUserId(), EventType.REVIEW, Operation.ADD, review.getReviewId());
         log.info("Отзыв создан: {}", review);
         return review;
     }
@@ -69,6 +78,8 @@ public class ReviewService {
         }
 
         Review updated = reviewStorage.updateReview(request);
+        // Вносим в ленту новостей пользователя информацию об обновлении отзыва
+        feedDBStorage.addFeed(request.getUserId(), EventType.REVIEW, Operation.UPDATE, updated.getReviewId());
         log.info("Отзыв обновлен: {}", updated);
         return updated;
     }
@@ -82,6 +93,10 @@ public class ReviewService {
 
     // Удаление отзыва
     public void deleteReview(long reviewId) {
+        // Вносим в ленту новостей пользователя информацию об удалении отзыва
+        feedDBStorage.addFeed(reviewStorage.getReview(reviewId).getUserId(),
+                EventType.REVIEW, Operation.REMOVE, reviewId);
+
         reviewStorage.deleteReview(reviewId);
         log.info("Отзыв удален: {}", reviewId);
     }
