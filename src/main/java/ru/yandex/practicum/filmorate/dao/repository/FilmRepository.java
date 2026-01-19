@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -58,11 +58,11 @@ public class FilmRepository extends BaseRepository<Film> {
             "GROUP BY f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id " +
             "ORDER BY EXTRACT(YEAR FROM f.releaseDate); ";
 
-    public FilmRepository(JdbcTemplate jdbc, RowMapper<Film> mapper) {
+    public FilmRepository(JdbcTemplate jdbc, FilmRowMapper mapper) {
         super(jdbc, mapper);
     }
 
-    // Получение  всех фильмов
+    // Получение всех фильмов
     public List<Film> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
