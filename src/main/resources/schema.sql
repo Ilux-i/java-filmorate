@@ -53,10 +53,10 @@ create TABLE IF NOT EXISTS mpa
 
 create TABLE IF NOT EXISTS feeds
 (
-    eventId INTEGER PRIMARY KEY AUTO_INCREMENT,
+    event_id INTEGER PRIMARY KEY AUTO_INCREMENT,
     timestamp INTEGER not null,
-    userId INTEGER not null,
-    eventType ENUM('LIKE', 'REVIEW', 'FRIEND') not null,
+    user_id INTEGER not null,
+    event_type ENUM('LIKE', 'REVIEW', 'FRIEND') not null,
     operation ENUM('REMOVE', 'ADD', 'UPDATE') not null,
-    entityId INTEGER not null
+    entity_id INTEGER not null
 );

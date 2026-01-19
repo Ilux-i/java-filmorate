@@ -16,7 +16,7 @@ import java.util.List;
 public class FeedDBStorage {
     private final FeedRepository feedRepository;
 
-    public Feed addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
+    public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
         Feed feed = new Feed();
         if (feed.getTimestamp() == null) {
             feed.setTimestamp(System.currentTimeMillis());
@@ -25,13 +25,10 @@ public class FeedDBStorage {
         feed.setEventType(eventType);
         feed.setOperation(operation);
         feed.setEntityId(entityId);
-        return feedRepository.add(feed);
+        feedRepository.add(feed);
     }
 
     public Collection<Feed> getFeed(Long userId) {
-        List<Feed> result = new ArrayList<>();
-        feedRepository.findById(userId)
-                .ifPresent(result::add);
-        return result;
+        return feedRepository.findByUserId(userId);
     }
 }
