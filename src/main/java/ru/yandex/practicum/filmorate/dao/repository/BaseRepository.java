@@ -15,7 +15,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class BaseRepository<T> {
     protected final JdbcTemplate jdbc;
-    protected final RowMapper<T> mapper;
+    protected final RowMapper<T> mapper;  // Только одна строка с mapper
 
     protected Optional<T> findOne(String query, Object... params) {
         try {
@@ -30,9 +30,9 @@ public class BaseRepository<T> {
         return jdbc.query(query, mapper, params);
     }
 
-    protected void delete(String query, long id) {
+    protected boolean delete(String query, long id) {
         int rowsDeleted = jdbc.update(query, id);
-        //return rowsDeleted > 0;
+        return rowsDeleted > 0;
     }
 
     protected void update(String query, Object... params) throws InternalServerException {

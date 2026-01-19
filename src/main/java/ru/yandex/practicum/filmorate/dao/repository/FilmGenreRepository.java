@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 import ru.yandex.practicum.filmorate.mapper.FilmGenreMapper;
@@ -19,7 +18,7 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
     private static final String REMOVE_FILM_GENRE_QUERY = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ?";
     private static final String REMOVE_FILM_GENRES_QUERY = "DELETE FROM film_genre WHERE film_id = ? AND genre_id IN (%s)";
 
-    public FilmGenreRepository(JdbcTemplate jdbc, RowMapper<FilmGenreDto> mapper) {
+    public FilmGenreRepository(JdbcTemplate jdbc, ru.yandex.practicum.filmorate.dao.mappers.FilmGenreRowMapper mapper) {
         super(jdbc, mapper);
     }
 
@@ -39,7 +38,7 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
         return dto;
     }
 
-    // Добавление списка жанров к фильму по из id
+    // Добавление списка жанров к фильму по id
     public List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds) {
         if (genreIds == null || genreIds.isEmpty()) {
             return Collections.emptyList();
@@ -90,5 +89,4 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
         // Объединение всего и ответ об успешности операции
         return jdbc.update(sql, params.toArray()) > 0;
     }
-
 }

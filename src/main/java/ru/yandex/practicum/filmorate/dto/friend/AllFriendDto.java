@@ -3,10 +3,9 @@ package ru.yandex.practicum.filmorate.dto.friend;
 import lombok.Data;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 
-// DTO с данными связи пользователь-друг и их статус
 @Data
 public class AllFriendDto {
-    private long userId;
-    private long friendId;
+    private Long userId;  // Изменено с long на Long
+    private Long friendId;
     private FriendshipStatus status;
 }
