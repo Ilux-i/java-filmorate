@@ -15,7 +15,7 @@ public class UserRowMapper implements RowMapper<User> {
     public User mapRow(ResultSet resultSet, int rowNum) throws SQLException {
         Timestamp birthday = resultSet.getTimestamp("birthday");
         return User.builder()
-                .id(resultSet.getLong("id"))
+                .id(resultSet.getLong("id"))  // Используйте getLong
                 .name(resultSet.getString("name"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))

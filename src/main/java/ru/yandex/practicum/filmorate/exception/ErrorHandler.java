@@ -17,6 +17,7 @@ public class ErrorHandler {
 
     @ExceptionHandler
     public ErrorResponse handleValidationException(final ValidationException e) {
+        log.error("ValidationException: ", e);
         return ErrorResponse.create(
                 e,
                 HttpStatusCode.valueOf(400),
@@ -37,11 +38,11 @@ public class ErrorHandler {
 
     @ExceptionHandler
     public ErrorResponse handleOtherException(final Throwable e) {
-        log.warn(e.getMessage(), e);
+        log.error("Unexpected exception: ", e);
         return ErrorResponse.create(
                 e,
                 HttpStatusCode.valueOf(500),
-                "Непредвиденная ошибка"
+                "Непредвиденная ошибка: " + e.getMessage()
         );
     }
 

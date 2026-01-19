@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.dao.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -23,7 +23,7 @@ public class UserRepository extends BaseRepository<User> {
     private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
     private static final String EXISTS = "SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)";
 
-    public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
+    public UserRepository(JdbcTemplate jdbc, UserRowMapper mapper) {
         super(jdbc, mapper);
     }
 
