@@ -197,7 +197,7 @@ public class FilmRepository extends BaseRepository<Film> {
             return getPopularWithFilters(genreId, year, limit);
         }
     }
-    
+
     private Collection<Film> getPopularWithFilters(Long genreId, Integer year, Long limit) {
         List<Object> params = new ArrayList<>();
 
