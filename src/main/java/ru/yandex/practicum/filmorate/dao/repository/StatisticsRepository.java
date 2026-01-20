@@ -126,49 +126,6 @@ public class StatisticsRepository {
         }
     }
 
-    // Получение популярных фильмов по жанру и году
-    public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
-        log.debug("getPopularFilmsByGenreAndYear called with: genreId={}, year={}, limit={}", genreId, year, limit);
-
-        StringBuilder sql = new StringBuilder(
-                "SELECT f.* " +
-                        "FROM films f " +
-                        "LEFT JOIN likes l ON f.id = l.film_id "
-        );
-
-        if (genreId != null) {
-            sql.append("INNER JOIN film_genre fg ON f.id = fg.film_id ");
-        }
-
-        sql.append("WHERE 1=1 ");
-
-        List<Object> params = new ArrayList<>();
-
-        if (genreId != null) {
-            sql.append("AND fg.genre_id = ? ");
-            params.add(genreId);
-        }
-
-        if (year != null) {
-            sql.append("AND YEAR(f.releaseDate) = ? ");
-            params.add(year);
-        }
-
-        sql.append("GROUP BY f.id ");
-        sql.append("ORDER BY COUNT(l.id) DESC ");
-        sql.append("LIMIT ? ");
-        params.add(limit);
-
-        try {
-            List<Film> result = jdbc.query(sql.toString(), filmRowMapper, params.toArray());
-            log.debug("getPopularFilmsByGenreAndYear returned {} films", result.size());
-            return result;
-        } catch (Exception e) {
-            log.error("Error in getPopularFilmsByGenreAndYear: ", e);
-            return Collections.emptyList();
-        }
-    }
-
     // Получение статистики по жанрам и годам
     public List<GenreYearStatistic> getGenreYearStatistics() {
         String sql = "SELECT YEAR(f.releaseDate) as year, " +

@@ -6,9 +6,7 @@ import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Repository
 public class FilmRepository extends BaseRepository<Film> {
@@ -157,14 +155,6 @@ public class FilmRepository extends BaseRepository<Film> {
         return film;
     }
 
-    // Получение популярных фильмов, судя по лайкам
-    public Collection<Film> getPopular(long count) {
-        return findMany(
-                FIND_POPULAR_FILM_QUERY,
-                count
-        );
-    }
-
     // Удаление фильма по id
     public void remove(long filmId) {
         delete(DELETE_QUERY, filmId);
@@ -198,4 +188,62 @@ public class FilmRepository extends BaseRepository<Film> {
     public Collection<Film> searchByAll(String query) {
         return findMany(GET_FILMS_BY_TITLE_OR_DIRECTOR, query, query);
     }
+
+    // Получение популярных фильмов по жанру и году
+    public Collection<Film> getPopular(Long genreId, Integer year, Long limit) {
+        if (genreId == null && year == null) {
+            return findMany(FIND_POPULAR_FILM_QUERY, limit);
+        } else {
+            return getPopularWithFilters(genreId, year, limit);
+        }
+    }
+    private Collection<Film> getPopularWithFilters(Long genreId, Integer year, Long limit) {
+        List<Object> params = new ArrayList<>();
+
+        // Базовый запрос без конечных частей
+        String baseQuery = """
+        SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID
+        FROM FILMS f
+        LEFT JOIN LIKES l ON f.ID = l.FILM_ID
+        """;
+
+        StringBuilder sql = new StringBuilder(baseQuery);
+
+        // Добавляем JOIN для жанра
+        if (genreId != null) {
+            sql.append("INNER JOIN FILM_GENRE fg ON f.ID = fg.FILM_ID ");
+        }
+
+        // Добавляем WHERE если есть фильтры
+        boolean hasCondition = false;
+        if (genreId != null || year != null) {
+            sql.append("WHERE ");
+            hasCondition = true;
+        }
+
+        if (genreId != null) {
+            sql.append("fg.GENRE_ID = ? ");
+            params.add(genreId);
+
+            if (year != null) {
+                sql.append("AND ");
+            }
+        }
+
+        if (year != null) {
+            sql.append("EXTRACT(YEAR FROM f.RELEASEDATE) = ? ");
+            params.add(year);
+        }
+
+        // Всегда добавляем GROUP BY и ORDER BY
+        sql.append("GROUP BY f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID ");
+        sql.append("ORDER BY COUNT(l.ID) DESC ");
+
+        // Добавляем LIMIT
+        sql.append("LIMIT ? ");
+        params.add(limit);
+
+        return jdbc.query(sql.toString(), mapper, params.toArray());
+    }
+
 }

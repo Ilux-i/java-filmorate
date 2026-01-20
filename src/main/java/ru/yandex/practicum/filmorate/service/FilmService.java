@@ -113,9 +113,11 @@ public class FilmService {
     }
 
     // Получение популярных фильмов
-    public Collection<Film> getPopularFilms(Long count) {
-        return filmStorage.getPopularFilms(count);
+    public Collection<Film> getPopularFilms(Long genreId, Integer year, Long limit) {
+        return filmStorage.getPopularFilms(genreId, year, limit);
     }
+
+
 
     // Получение всех фильмов
     public Collection<Film> getAllFilms() {
@@ -144,20 +146,6 @@ public class FilmService {
             log.info("Пользователь с id: {}, удалил лайк на фильм с id: {}", userId, filmId);
         } else {
             log.info("Пользователь с id: {}, не ставил лайк на фильм с id: {}", userId, filmId);
-        }
-    }
-
-    // Получение количества лайков
-    public long getCountLikes(Film film) {
-        return filmStorage.getLikes(film.getId());
-    }
-
-    // Добавление жанра к фильму
-    public void addGenreInFilm(long filmId, long genreId) {
-        try {
-            filmStorage.addGenreInFilm(filmId, genreId);
-        } catch (IllegalArgumentException e) {
-            log.warn("Жанра '{}' не существует", genreId);
         }
     }
 

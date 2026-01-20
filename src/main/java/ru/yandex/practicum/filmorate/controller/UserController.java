@@ -19,7 +19,7 @@ import java.util.List; // Добавьте этот импорт
 public class UserController {
 
     private final UserService userService;
-    private final RecommendationService recommendationService; // Добавьте эту зависимость
+    private final RecommendationService recommendationService;
 
     // Добавления пользователя
     @PostMapping
@@ -77,7 +77,7 @@ public class UserController {
 
     // ДОБАВЬТЕ ЭТОТ МЕТОД - получение рекомендаций для пользователя
     @GetMapping("/{userId}/recommendations")
-    public List<Film> getUserRecommendations(@PathVariable final long userId) {
+    public Collection<Film> getUserRecommendations(@PathVariable final long userId) {
         log.info("Получение рекомендаций для пользователя с ID: {}", userId);
         return recommendationService.getRecommendations(userId);
     }

@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.dto.statistics.GenreYearStatistic;
 import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage; // Добавьте эту строку
 
 import java.util.*;
@@ -19,10 +20,10 @@ public class RecommendationService {
 
     private final StatisticsRepository statisticsRepository;
     private final UserStorage userStorage; // Этот импорт теперь будет работать
-    private final FilmService filmService;
     private final GenreService genreService;
+    private final FilmStorage filmStorage;
 
-    public List<Film> getRecommendations(Long userId) {
+    public Collection<Film> getRecommendations(Long userId) {
         log.info("====== RecommendationService.getRecommendations ВЫЗВАН ДЛЯ userId: {} ======", userId);
         try {
             // Проверяем существование пользователя
@@ -35,15 +36,7 @@ public class RecommendationService {
                     userId, recommendations.size());
 
             // Обогащаем фильмы полной информацией
-            List<Film> result = new ArrayList<>();
-            for (Film film : recommendations) {
-                try {
-                    Film fullFilm = filmService.getFilmById(film.getId());
-                    result.add(fullFilm);
-                } catch (Exception e) {
-                    log.warn("Фильм с id {} не найден, пропускаем: {}", film.getId(), e.getMessage());
-                }
-            }
+            Collection<Film> result = filmStorage.fullFilms(recommendations);
 
             log.info("====== RecommendationService.getRecommendations УСПЕШНО ВЕРНУЛ {} РЕКОМЕНДАЦИЙ ДЛЯ userId: {} ======",
                     result.size(), userId);
@@ -54,50 +47,6 @@ public class RecommendationService {
         } catch (Exception e) {
             log.error("Ошибка в RecommendationService.getRecommendations для userId {}: {}", userId, e.getMessage(), e);
             throw new InternalServerException("Ошибка при получении рекомендаций: " + e.getMessage());
-        }
-    }
-
-    public List<Film> getPopularFilmsByGenreAndYear(Long genreId, Integer year, Long limit) {
-        log.info("Начало получения популярных фильмов: genreId={}, year={}, limit={}", genreId, year, limit);
-        try {
-            // Валидация параметров
-            if (genreId != null && genreId <= 0) {
-                throw new ObjectNotFoundException("Genre ID должен быть положительным");
-            }
-
-            if (year != null && (year < 1895 || year > Calendar.getInstance().get(Calendar.YEAR) + 1)) {
-                throw new ObjectNotFoundException("Год должен быть в диапазоне 1895-" +
-                        (Calendar.getInstance().get(Calendar.YEAR) + 1));
-            }
-
-            if (limit == null || limit <= 0) {
-                limit = 10L;
-                log.debug("Лимит установлен по умолчанию: {}", limit);
-            }
-
-            log.debug("Вызов statisticsRepository.getPopularFilmsByGenreAndYear");
-            List<Film> films = statisticsRepository.getPopularFilmsByGenreAndYear(genreId, year, limit);
-            log.debug("Получено {} фильмов из репозитория", films.size());
-
-            // Обогащаем фильмы полной информацией
-            List<Film> result = new ArrayList<>();
-            for (Film film : films) {
-                try {
-                    Film fullFilm = filmService.getFilmById(film.getId());
-                    result.add(fullFilm);
-                } catch (Exception e) {
-                    log.warn("Фильм с id {} не найден, пропускаем. Ошибка: {}", film.getId(), e.getMessage());
-                }
-            }
-            log.info("Успешно возвращено {} популярных фильмов", result.size());
-            return result;
-        } catch (ObjectNotFoundException e) {
-            log.error("Ошибка валидации параметров: ", e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Ошибка при получении популярных фильмов: жанр={}, год={}, лимит={}: {}",
-                    genreId, year, limit, e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении популярных фильмов: " + e.getMessage());
         }
     }
 

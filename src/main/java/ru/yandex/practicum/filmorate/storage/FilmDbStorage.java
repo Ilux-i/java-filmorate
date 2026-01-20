@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.*;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
-import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -14,7 +13,6 @@ import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmGenreMapper.mapToFilmGenreDto;
 import static ru.yandex.practicum.filmorate.mapper.LikeMapper.mapToLikeDto;
@@ -79,8 +77,17 @@ public class FilmDbStorage implements FilmStorage {
 
     // Получение популярных фильмов
     @Override
-    public Collection<Film> getPopularFilms(Long count) {
-        return fullFilms(filmRepository.getPopular(count));
+    public Collection<Film> getPopularFilms(Long genreId, Integer year, Long limit) {
+        // Валидация параметров
+        if (genreId != null && genreId <= 0) {
+            throw new ObjectNotFoundException("Genre ID должен быть положительным");
+        }
+        if (year != null && (year < 1895 || year > Calendar.getInstance().get(Calendar.YEAR) + 1)) {
+            throw new ObjectNotFoundException("Год должен быть в диапазоне 1895-" +
+                    (Calendar.getInstance().get(Calendar.YEAR) + 1));
+        }
+
+        return fullFilms(filmRepository.getPopular(genreId, year, limit));
     }
 
     // Получение всех фильмов
@@ -175,13 +182,14 @@ public class FilmDbStorage implements FilmStorage {
         return fullFilms(filmRepository.searchByAll(query));
     }
 
-    private Collection<Film> fullFilms(Collection<Film> films) {
-        return films.
-                stream()
+    @Override
+    public Collection<Film> fullFilms(Collection<Film> films) {
+        return films
+                .stream()
                 // Заполнение Mpa
                 .peek(film -> film.setMpa(mpaService.getMpa(film.getMpa().getId())))
                 // Заполнение лайками
-                .peek(film -> likeRepository.countLikesByFilmId(film.getId()))
+                .peek(film -> film.setLikes(likeRepository.countLikesByFilmId(film.getId())))
                 // Заполнение жанрами
                 .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
                 // Заполнение режиссёрами
