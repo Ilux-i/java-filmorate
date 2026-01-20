@@ -25,13 +25,13 @@ public class FilmRepository extends BaseRepository<Film> {
 
     private static final String DELETE_QUERY = "DELETE FROM films WHERE id = ?";
 
-    private static final String FIND_POPULAR_FILM_QUERY =
-            "SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
-                    "FROM FILMS f " +
-                    "LEFT JOIN LIKES l ON f.ID = l.FILM_ID " +
-                    "GROUP BY f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID " +
-                    "ORDER BY COUNT(l.ID) DESC " +
-                    "LIMIT ?";
+    private static final String FIND_POPULAR_FILM_QUERY = """
+            SELECT f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID
+                    FROM FILMS f
+                    LEFT JOIN LIKES l ON f.ID = l.FILM_ID
+                    GROUP BY f.ID, f.NAME, f.DESCRIPTION, f.RELEASEDATE, f.DURATION, f.RATING_ID
+                    ORDER BY COUNT(l.ID) DESC
+                    LIMIT ?""";
     private static final String COMMON_FILMS_QUERY =
             "SELECT * FROM films f " +
                     "WHERE f.id IN (SELECT film_id FROM likes WHERE user_id = ?) " +

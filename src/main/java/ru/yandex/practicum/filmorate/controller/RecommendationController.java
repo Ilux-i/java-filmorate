@@ -34,25 +34,6 @@ public class RecommendationController {
         }
     }
 
-    // Получение популярных фильмов по жанру и/или году
-    @GetMapping("/popular-films")
-    public ResponseEntity<List<Film>> getPopularFilmsByGenreAndYear(
-            @RequestParam(required = false) Long genreId,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(defaultValue = "10") Long limit) {
-
-        log.info("=== START Получение популярных фильмов по жанру: {}, году: {}, лимит: {} ===",
-                genreId, year, limit);
-        try {
-            List<Film> films = recommendationService.getPopularFilmsByGenreAndYear(genreId, year, limit);
-            log.info("=== SUCCESS Популярные фильмы получены, количество: {} ===", films.size());
-            return ResponseEntity.ok(films);
-        } catch (Exception e) {
-            log.error("=== ERROR Ошибка при получении популярных фильмов: {} ===", e.getMessage(), e);
-            throw e;
-        }
-    }
-
     // Получение расширенной статистики
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getStatistics() {
