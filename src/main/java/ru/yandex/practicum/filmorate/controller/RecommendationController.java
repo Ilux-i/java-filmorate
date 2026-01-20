@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.RecommendationService;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -20,13 +21,10 @@ public class RecommendationController {
 
     // Получение рекомендаций для пользователя
     @GetMapping("/users/{userId}")
-    public ResponseEntity<List<Film>> getUserRecommendations(@PathVariable Long userId) {
+    public Collection<Film> getUserRecommendations(@PathVariable Long userId) {
         log.info("=== START Получение рекомендаций для пользователя с ID: {} ===", userId);
         try {
-            List<Film> recommendations = recommendationService.getRecommendations(userId);
-            log.info("=== SUCCESS Рекомендации для пользователя {} получены, количество: {} ===",
-                    userId, recommendations.size());
-            return ResponseEntity.ok(recommendations);
+            return recommendationService.getRecommendations(userId);
         } catch (Exception e) {
             log.error("=== ERROR Ошибка при получении рекомендаций для пользователя {}: {} ===",
                     userId, e.getMessage(), e);

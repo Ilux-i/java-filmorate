@@ -56,34 +56,12 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
-//    // Получение популярных, судя по лайкам, фильмов(по умолчанию топ 10)
-//    @GetMapping("/popular")
-//    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") Long count) {
-//        return filmService.getPopularFilms(count);
-//    }
-
     // Получение популярных фильмов по жанру и/или году
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilmsByGenreAndYear(
-            @RequestParam(required = false) Long genreId,
-            @RequestParam(required = false) Integer year,
-            @RequestParam(defaultValue = "10") Long limit) {
-
-        log.info("=== START Получение популярных фильмов по жанру: {}, году: {}, лимит: {} ===",
-                genreId, year, limit);
-        try {
-            Collection<Film> films;
-            if (genreId == null && year == null) {
-                films = (List<Film>) filmService.getPopularFilms(limit);
-            } else {
-                films = recommendationService.getPopularFilmsByGenreAndYear(genreId, year, limit);
-            }
-            log.info("=== SUCCESS Популярные фильмы получены, количество: {} ===", films.size());
-            return films;
-        } catch (Exception e) {
-            log.error("=== ERROR Ошибка при получении популярных фильмов: {} ===", e.getMessage(), e);
-            throw e;
-        }
+    public Collection<Film> getPopularFilmsByGenreAndYear(@RequestParam(required = false) Long genreId,
+                                                          @RequestParam(required = false) Integer year,
+                                                          @RequestParam(defaultValue = "10") Long count) {
+        return filmService.getPopularFilms(genreId, year, count);
     }
 
     // Получение фильмов по режиссёру

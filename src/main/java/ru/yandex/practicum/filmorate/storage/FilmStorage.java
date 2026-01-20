@@ -23,7 +23,7 @@ public interface FilmStorage {
     Film getFilmById(long filmId);
 
     // Получение популярных фильмов
-    Collection<Film> getPopularFilms(Long count);
+    Collection<Film> getPopularFilms(Long genreId, Integer year, Long limit);
 
     // Получение всех фильмов
     Collection<Film> getAllFilms();
@@ -65,4 +65,6 @@ public interface FilmStorage {
 
     // Поиск фильмов по режиссёру и названию
     Collection<Film> searchByAll(String query);
+
+    Collection<Film> fullFilms(Collection<Film> films);
 }
