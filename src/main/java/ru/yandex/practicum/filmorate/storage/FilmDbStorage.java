@@ -9,7 +9,6 @@ import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
@@ -70,50 +69,37 @@ public class FilmDbStorage implements FilmStorage {
         // Заполнение рейтинга
         film.setMpa(mpaService.getMpa(film.getMpa().getId()));
         // Заполнение жанра
-        film.setGenres(filmGenreRepository.findAllByFilm(filmId).stream()
-                .map(dto -> genreService.getGenre(dto.getGenreId()))
-                .collect(Collectors.toSet())
-        );
+        film.setGenres(getGenresByFilm(film.getId()));
         // Заполнение лайков
-        film.setLikes(likeRepository.findAllByFilm(filmId).stream()
-                .map(LikeDto::getUserId)
-                .collect(Collectors.toSet())
-        );
+        likeRepository.countLikesByFilmId(film.getId());
         // Заполнение режиссёрами
-        film.setDirectors(filmDirectorRepository.findAllByFilm(filmId).stream()
-                .map(dto -> directorService.getById(dto.getDirectorId()))
-                .collect(Collectors.toSet()));
+        film.setDirectors(directorService.getDirectorsByFilm(film.getId()));
         return film;
     }
 
     // Получение популярных фильмов
     @Override
     public Collection<Film> getPopularFilms(Long count) {
-        return filmRepository.getPopular(count);
+        return fullFilms(filmRepository.getPopular(count));
     }
 
     // Получение всех фильмов
     @Override
-    public HashMap<Long, Film> getAllFilms() {
-        HashMap<Long, Film> result = new HashMap<>();
-        filmRepository.findAll()
-                .stream()
-                // Заполнение жанрами
-                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
-                // Заполнение режиссёрами
-                .peek(film -> film.setDirectors(filmDirectorRepository
-                        .findAllByFilm(film.getId()).stream()
-                        .map(dto -> directorService.getById(dto.getDirectorId()))
-                        .collect(Collectors.toSet())))
-                .forEach(film -> result.put(film.getId(), film));
-        return result;
+    public Collection<Film> getAllFilms() {
+        return fullFilms(filmRepository.findAll());
+
     }
 
     // Получение списка жанров по фильму
     @Override
     public Set<Genre> getGenresByFilm(long filmId) {
         Set<Genre> result = new HashSet<>();
-        filmGenreRepository.findAllByFilm(filmId).forEach(dto -> result.add(Genre.builder().id(dto.getGenreId()).build()));
+        filmGenreRepository.findAllByFilm(filmId)
+                .forEach(dto -> result.add(Genre
+                        .builder()
+                        .id(dto.getGenreId())
+                        .name(genreService.getGenre(dto.getGenreId()).getName())
+                        .build()));
         return result;
     }
 
@@ -161,87 +147,46 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
-        return filmRepository.getFilmsByDirector(directorId, sortBy)
-                .stream()
-                // Заполнение жанрами
-                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
-                // Заполнение режиссёрами
-                .peek(film -> film.setDirectors(filmDirectorRepository
-                        .findAllByFilm(film.getId()).stream()
-                        .map(dto -> directorService.getById(dto.getDirectorId()))
-                        .collect(Collectors.toSet())))
-                .toList();
+        return fullFilms(filmRepository.getFilmsByDirector(directorId, sortBy));
     }
 
     // Получение общих фильмов
     @Override
-    public List<Film> getCommonFilms(long userId, long friendId) {
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
         // Получаем фильмы из репозитория
-        List<Film> films = filmRepository.getCommonFilms(userId, friendId);
-
-        for (Film film : films) {
-            // Заполняем жанры
-            film.setGenres(filmGenreRepository.findAllByFilm(film.getId()).stream()
-                    .map(dto -> genreService.getGenre(dto.getGenreId()))
-                    .collect(Collectors.toSet()));
-
-            // Заполняем MPA полностью
-            Mpa fullMpa = mpaService.getMpa(film.getMpa().getId());
-            film.setMpa(fullMpa);
-
-            // Заполняем лайки
-            film.setLikes(likeRepository.findAllByFilm(film.getId()).stream()
-                    .map(LikeDto::getUserId)
-                    .collect(Collectors.toSet()));
-        }
-        return films;
+        return fullFilms(filmRepository.getCommonFilms(userId, friendId));
     }
 
     // Поиск фильмов по названию
     @Override
     public Collection<Film> searchByTitle(String query) {
-        List<Film> result = new ArrayList<>();
-        filmRepository.searchByTitle(query).stream()
-                // Заполнение жанрами
-                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
-                // Заполнение режиссёрами
-                .peek(film -> film.setDirectors(filmDirectorRepository
-                        .findAllByFilm(film.getId()).stream()
-                        .map(dto -> directorService.getById(dto.getDirectorId()))
-                        .collect(Collectors.toSet())))
-                .forEach(result::add);
-        return result;
+        return fullFilms(filmRepository.searchByTitle(query));
     }
 
     // Поиск фильмов по режиссёру
     @Override
     public Collection<Film> searchByDirector(String query) {
-        List<Film> result = new ArrayList<>();
-        filmRepository.searchByDirector(query).stream()
-                // Заполнение жанрами
-                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
-                // Заполнение режиссёрами
-                .peek(film -> film.setDirectors(filmDirectorRepository
-                        .findAllByFilm(film.getId()).stream()
-                        .map(dto -> directorService.getById(dto.getDirectorId()))
-                        .collect(Collectors.toSet())))
-                .forEach(result::add);
-        return result;
+        return fullFilms(filmRepository.searchByDirector(query));
     }
 
     // Поиск фильмов по режиссёру и названию
     @Override
     public Collection<Film> searchByAll(String query) {
-        List<Film> result = new ArrayList<>();
-        filmRepository.searchByAll(query).stream()
+        return fullFilms(filmRepository.searchByAll(query));
+    }
+
+    private Collection<Film> fullFilms(Collection<Film> films) {
+        return films.
+                stream()
+                // Заполнение Mpa
+                .peek(film -> film.setMpa(mpaService.getMpa(film.getMpa().getId())))
+                // Заполнение лайками
+                .peek(film -> likeRepository.countLikesByFilmId(film.getId()))
                 // Заполнение жанрами
                 .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
                 // Заполнение режиссёрами
-                .peek(film -> film.setDirectors(filmDirectorRepository
-                        .findAllByFilm(film.getId()).stream()
-                        .map(dto -> directorService.getById(dto.getDirectorId()))
-                        .collect(Collectors.toSet())))
-                .forEach(result::add);
-        return result;
+                .peek(film -> film.setDirectors(directorService
+                        .getDirectorsByFilm(film.getId())))
+                .toList();
     }
 }

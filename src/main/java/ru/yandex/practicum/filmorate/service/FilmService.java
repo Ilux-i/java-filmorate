@@ -119,7 +119,7 @@ public class FilmService {
 
     // Получение всех фильмов
     public Collection<Film> getAllFilms() {
-        return filmStorage.getAllFilms().values();
+        return filmStorage.getAllFilms();
     }
 
     // Добавление лайка к фильму
@@ -225,7 +225,7 @@ public class FilmService {
         }
         userStorage.getUserById(userId);
         userStorage.getUserById(friendId);
-        List<Film> common = filmStorage.getCommonFilms(userId, friendId);
+        Collection<Film> common = filmStorage.getCommonFilms(userId, friendId);
         log.info("Общие фильмы для пользователей {} и {}: {} штук", userId, friendId, common.size());
         return common;
     }

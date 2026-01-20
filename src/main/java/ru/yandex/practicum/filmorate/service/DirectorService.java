@@ -10,9 +10,12 @@ import ru.yandex.practicum.filmorate.exception.InternalServerException;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
+import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 
 @Slf4j
@@ -69,6 +72,17 @@ public class DirectorService {
         } catch (InternalServerException e) {
             throw new InternalServerException("Ошибка при удалении режиссёра по id = " + directorId);
         }
+    }
+
+    // Получение списка режиссёров по фильму
+    public Set<Director> getDirectorsByFilm(long filmId) {
+        Set<Director> result = new HashSet<>();
+        filmDirectorRepository.findAllByFilm(filmId)
+                .forEach(dto -> result.add(Director.builder()
+                        .id(dto.getDirectorId())
+                        .name(getById(dto.getDirectorId()).getName())
+                        .build()));
+        return result;
     }
 
 }

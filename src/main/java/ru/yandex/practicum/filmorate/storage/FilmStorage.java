@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ public interface FilmStorage {
     Collection<Film> getPopularFilms(Long count);
 
     // Получение всех фильмов
-    HashMap<Long, Film> getAllFilms();
+    Collection<Film> getAllFilms();
 
     // Получение списка жанров по фильму
     Set<Genre> getGenresByFilm(long filmId);
@@ -53,7 +52,7 @@ public interface FilmStorage {
     boolean removeLike(long userId, long filmId);
 
     // Получение общих фильмов
-    List<Film> getCommonFilms(long userId, long friendId);
+    Collection<Film> getCommonFilms(long userId, long friendId);
 
     // Получение фильмов по режиссёру
     Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy);
