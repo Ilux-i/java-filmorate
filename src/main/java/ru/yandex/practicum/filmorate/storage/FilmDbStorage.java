@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.*;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
-import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -14,7 +13,6 @@ import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmGenreMapper.mapToFilmGenreDto;
 import static ru.yandex.practicum.filmorate.mapper.LikeMapper.mapToLikeDto;
@@ -176,8 +174,8 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private Collection<Film> fullFilms(Collection<Film> films) {
-        return films.
-                stream()
+        return films
+                .stream()
                 // Заполнение Mpa
                 .peek(film -> film.setMpa(mpaService.getMpa(film.getMpa().getId())))
                 // Заполнение лайками
