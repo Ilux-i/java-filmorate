@@ -2,10 +2,7 @@ package ru.yandex.practicum.filmorate.storage;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.dao.repository.FilmDirectorRepository;
-import ru.yandex.practicum.filmorate.dao.repository.FilmGenreRepository;
-import ru.yandex.practicum.filmorate.dao.repository.FilmRepository;
-import ru.yandex.practicum.filmorate.dao.repository.LikeRepository;
+import ru.yandex.practicum.filmorate.dao.repository.*;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
 import ru.yandex.practicum.filmorate.dto.like.LikeDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
@@ -200,4 +197,51 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    // Поиск фильмов по названию
+    @Override
+    public Collection<Film> searchByTitle(String query) {
+        List<Film> result = new ArrayList<>();
+        filmRepository.searchByTitle(query).stream()
+                // Заполнение жанрами
+                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
+                // Заполнение режиссёрами
+                .peek(film -> film.setDirectors(filmDirectorRepository
+                        .findAllByFilm(film.getId()).stream()
+                        .map(dto -> directorService.getById(dto.getDirectorId()))
+                        .collect(Collectors.toSet())))
+                .forEach(result::add);
+        return result;
+    }
+
+    // Поиск фильмов по режиссёру
+    @Override
+    public Collection<Film> searchByDirector(String query) {
+        List<Film> result = new ArrayList<>();
+        filmRepository.searchByDirector(query).stream()
+                // Заполнение жанрами
+                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
+                // Заполнение режиссёрами
+                .peek(film -> film.setDirectors(filmDirectorRepository
+                        .findAllByFilm(film.getId()).stream()
+                        .map(dto -> directorService.getById(dto.getDirectorId()))
+                        .collect(Collectors.toSet())))
+                .forEach(result::add);
+        return result;
+    }
+
+    // Поиск фильмов по режиссёру и названию
+    @Override
+    public Collection<Film> searchByAll(String query) {
+        List<Film> result = new ArrayList<>();
+        filmRepository.searchByAll(query).stream()
+                // Заполнение жанрами
+                .peek(film -> film.setGenres(getGenresByFilm(film.getId())))
+                // Заполнение режиссёрами
+                .peek(film -> film.setDirectors(filmDirectorRepository
+                        .findAllByFilm(film.getId()).stream()
+                        .map(dto -> directorService.getById(dto.getDirectorId()))
+                        .collect(Collectors.toSet())))
+                .forEach(result::add);
+        return result;
+    }
 }
