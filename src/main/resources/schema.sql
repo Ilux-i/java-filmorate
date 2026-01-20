@@ -65,10 +65,10 @@ create TABLE IF NOT EXISTS mpa
 );
 
 -- Индексы для оптимизации запросов рекомендаций
-CREATE INDEX IF NOT EXISTS idx_likes_user_film ON likes(user_id, film_id);
-CREATE INDEX IF NOT EXISTS idx_likes_film_user ON likes(film_id, user_id);
-CREATE INDEX IF NOT EXISTS idx_films_release_year ON films(YEAR(releaseDate));
-CREATE INDEX IF NOT EXISTS idx_film_genre_film_genre ON film_genre(film_id, genre_id);
+-- CREATE INDEX IF NOT EXISTS idx_likes_user_film ON likes(user_id, film_id);
+-- CREATE INDEX IF NOT EXISTS idx_likes_film_user ON likes(film_id, user_id);
+-- CREATE INDEX IF NOT EXISTS idx_films_release_year ON films(YEAR(releaseDate));
+-- CREATE INDEX IF NOT EXISTS idx_film_genre_film_genre ON film_genre(film_id, genre_id);
 
 -- Представление для быстрого доступа к статистике
 CREATE VIEW IF NOT EXISTS film_statistics AS
