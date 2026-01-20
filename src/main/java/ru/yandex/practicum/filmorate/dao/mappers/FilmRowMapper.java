@@ -14,20 +14,14 @@ import java.time.LocalDate;
 public class FilmRowMapper implements RowMapper<Film> {
     @Override
     public Film mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        //Timestamp releaseDate = resultSet.getTimestamp("releaseDate");
-        LocalDate releaseDate = null;
-        Timestamp timestamp = resultSet.getTimestamp("releaseDate");
-        if (timestamp != null) {
-            releaseDate = timestamp.toLocalDateTime().toLocalDate();
-        }
         return Film.builder()
-                .id(resultSet.getLong("id"))  // Используйте getLong для Long полей
+                .id(resultSet.getLong("id"))
                 .name(resultSet.getString("name"))
                 .description(resultSet.getString("description"))
-                .releaseDate(releaseDate)
+                .releaseDate(resultSet.getDate("releaseDate").toLocalDate())
                 .duration(resultSet.getInt("duration"))
                 .mpa(Mpa.builder()
-                        .id(resultSet.getLong("rating_id"))  // Если rating_id тоже Long
+                        .id(resultSet.getLong("rating_id"))
                         .build())
                 .build();
     }

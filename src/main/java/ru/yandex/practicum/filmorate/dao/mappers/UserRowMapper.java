@@ -13,13 +13,12 @@ import java.time.LocalDate;
 public class UserRowMapper implements RowMapper<User> {
     @Override
     public User mapRow(ResultSet resultSet, int rowNum) throws SQLException {
-        Timestamp birthday = resultSet.getTimestamp("birthday");
         return User.builder()
-                .id(resultSet.getLong("id"))  // Используйте getLong
+                .id(resultSet.getLong("id"))
                 .name(resultSet.getString("name"))
                 .email(resultSet.getString("email"))
                 .login(resultSet.getString("login"))
-                .birthday(LocalDate.from(birthday.toLocalDateTime()))
+                .birthday(resultSet.getDate("birthday").toLocalDate())
                 .build();
     }
 }

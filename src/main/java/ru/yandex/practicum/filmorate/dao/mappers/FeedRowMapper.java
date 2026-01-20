@@ -14,11 +14,11 @@ public class FeedRowMapper implements RowMapper<Feed> {
     @Override
     public Feed mapRow(ResultSet rs, int rowNum) throws SQLException {
         return Feed.builder()
+                .eventId(rs.getLong("event_id"))
                 .timestamp(rs.getLong("timestamp"))
                 .userId(rs.getLong("user_id"))
                 .eventType(EventType.valueOf(rs.getString("event_type")))
                 .operation(Operation.valueOf(rs.getString("operation")))
-                .eventId(rs.getLong("event_id"))
                 .entityId(rs.getLong("entity_id"))
                 .build();
     }
