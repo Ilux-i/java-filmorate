@@ -50,7 +50,7 @@ public class ReviewService {
 
         Review review = reviewStorage.createReview(request);
         // Вносим в ленту новостей пользователя информацию об создании отзыва
-        feedDBStorage.addFeed(request.getUserId(), EventType.REVIEW, Operation.ADD, review.getReviewId());
+        feedDBStorage.addFeed(review.getUserId(), EventType.REVIEW, Operation.ADD, review.getReviewId());
         log.info("Отзыв создан: {}", review);
         return review;
     }
@@ -83,7 +83,7 @@ public class ReviewService {
 
         Review updated = reviewStorage.updateReview(request);
         // Вносим в ленту новостей пользователя информацию об обновлении отзыва
-        feedDBStorage.addFeed(request.getUserId(), EventType.REVIEW, Operation.UPDATE, updated.getReviewId());
+        feedDBStorage.addFeed(existing.getUserId(), EventType.REVIEW, Operation.UPDATE, updated.getReviewId());
         log.info("Отзыв обновлен: {}", updated);
         return updated;
     }
