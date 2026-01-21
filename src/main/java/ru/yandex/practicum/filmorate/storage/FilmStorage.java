@@ -34,13 +34,15 @@ public interface FilmStorage {
     // Добавление жанра к фильму
     FilmGenreDto addGenreInFilm(long filmId, long genreId);
 
-    List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds);
+    // Добавление жанров в фильм
+    void addGenresToFilm(long filmId, Set<Long> genreIds);
 
     // Удаление жанра из фильма
     boolean removeGenreInFilm(long filmId, long genreId);
 
+
     // Удаление жанров из фильма
-    boolean removeGenresInFilm(long filmId, List<Long> genresId);
+    void removeGenresInFilm(long filmId, Set<Long> genresId);
 
     // Поставить лайк
     void setLike(long userId, long filmId);

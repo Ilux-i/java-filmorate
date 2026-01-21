@@ -73,16 +73,11 @@ public class FilmService {
             Film result = updateFilmFields(oldFilm, updateFilm);
             // Валидация
             if (valid(result)) {
-                if (film.getGenres() != null) {
-                    updateGenres(result.getId(), film.getGenres());
-                }
-                if (film.getDirectors() != null) {
-                    updateDirectors(
-                            result.getId(),
-                            film.getDirectors().stream().map(Director::getId).collect(Collectors.toSet())
-                    );
-                    result.setDirectors(film.getDirectors());
-                }
+                updateGenres(result.getId(), film.getGenres());
+                updateDirectors(
+                        result.getId(),
+                        film.getDirectors()
+                );
                 filmStorage.updateFilm(result);
                 return result;
             } else {
@@ -117,8 +112,7 @@ public class FilmService {
 
     // Получение всех фильмов
     public Collection<Film> getAllFilms() {
-        Collection<Film> res = filmStorage.getAllFilms();
-        return res;
+        return filmStorage.getAllFilms();
     }
 
     // Добавление лайка к фильму
@@ -149,41 +143,64 @@ public class FilmService {
     // Обновление списка жанров к фильму
     private void updateGenres(long filmId, Set<Genre> genres) {
         // Старые жанры
-        Set<Genre> oldGenres = filmStorage.getGenresByFilm(filmId);
-
-        // Жанры, которые надо удалить
-        List<Long> toRemove = oldGenres.stream()
-                .filter(genre -> !genres.contains(genre))
+        Set<Long> oldGenres = filmStorage.getGenresByFilm(filmId).stream()
                 .map(Genre::getId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        // Жанры, которые надо добавить
-        List<Long> toAdd = genres.stream()
-                .filter(genre -> !oldGenres.contains(genre))
-                .map(Genre::getId)
-                .collect(Collectors.toList());
+//        // Жанры, которые надо удалить
+//        List<Long> toRemove = oldGenres.stream()
+//                .filter(genre -> !genres.contains(genre))
+//                .map(Genre::getId)
+//                .collect(Collectors.toList());
+//
+//        // Жанры, которые надо добавить
+//        List<Long> toAdd = genres.stream()
+//                .filter(genre -> !oldGenres.contains(genre))
+//                .map(Genre::getId)
+//                .collect(Collectors.toList());
 
-        filmStorage.removeGenresInFilm(filmId, toRemove);
-        filmStorage.addGenresToFilm(filmId, toAdd);
+        if (!oldGenres.isEmpty()) {
+            filmStorage.removeGenresInFilm(filmId, oldGenres);
+        }
+
+        if (!genres.isEmpty()) {
+            filmStorage.addGenresToFilm(
+                    filmId,
+                    genres.stream()
+                            .map(Genre::getId)
+                            .collect(Collectors.toSet())
+            );
+        }
     }
 
     // Обновление списка режиссёров к фильму
-    private void updateDirectors(long filmId, Set<Long> directors) {
+    private void updateDirectors(long filmId, Set<Director> directors) {
         // Старые режиссёры
         List<FilmDirectorDto> oldDirectors = filmDirectorRepository.findAllByFilm(filmId);
 
-        // Режиссёры, которые надо удалить
-        List<FilmDirectorDto> toRemove = oldDirectors.stream()
-                .filter(pair -> !directors.contains(pair.getDirectorId()))
-                .collect(Collectors.toList());
+//        // Режиссёры, которые надо удалить
+//        List<FilmDirectorDto> toRemove = oldDirectors.stream()
+//                .filter(pair -> !directors.contains(pair.getDirectorId()))
+//                .collect(Collectors.toList());
+//
+//        // Режиссёры, которые надо добавить
+//        List<Long> toAdd = directors.stream()
+//                .filter(directorId -> !oldDirectors.contains(directorId))
+//                .collect(Collectors.toList());
 
-        // Режиссёры, которые надо добавить
-        List<Long> toAdd = directors.stream()
-                .filter(directorId -> !oldDirectors.contains(directorId))
-                .collect(Collectors.toList());
+        if (!oldDirectors.isEmpty()) {
+            filmDirectorRepository.removeFilmDirectorByPair(oldDirectors);
+        }
 
-        filmDirectorRepository.removeFilmDirectorByPair(toRemove);
-        filmDirectorRepository.addDirectorsToFilm(filmId, toAdd);
+        if (!directors.isEmpty()) {
+            filmDirectorRepository.addDirectorsToFilm(
+                    filmId,
+                    directors
+                            .stream()
+                            .map(Director::getId)
+                            .collect(Collectors.toSet())
+            );
+        }
     }
 
     // Валидация

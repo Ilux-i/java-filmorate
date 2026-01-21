@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.mapper.FilmGenreMapper;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -40,9 +41,9 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
     }
 
     // Добавление списка жанров к фильму по id
-    public List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds) {
+    public void addGenresToFilm(long filmId, Set<Long> genreIds) {
         if (genreIds == null || genreIds.isEmpty()) {
-            return Collections.emptyList();
+            return;
         }
 
         // Подготовка данных к сохранению в бд
@@ -53,12 +54,12 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
         // Сохранение данных
         jdbc.batchUpdate(INSERT_GENRES_IN_FILM_QUERY, batchArgs);
 
-        // Возвращение списка FilmGenreDto к фильму
-        return genreIds.stream()
-                .map(genreId ->
-                        FilmGenreMapper.mapToFilmGenreDto(filmId, genreId)
-                )
-                .collect(Collectors.toList());
+//        // Возвращение списка FilmGenreDto к фильму
+//        genreIds.stream()
+//                .map(genreId ->
+//                        FilmGenreMapper.mapToFilmGenreDto(filmId, genreId)
+//                )
+//                .collect(Collectors.toList());
     }
 
     // Удаление связи жанр-фильм
@@ -67,7 +68,7 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
     }
 
     // Удаление списка жанров из фильма
-    public boolean removeGenres(long filmId, List<Long> genreIds) {
+    public boolean removeGenres(long filmId, Set<Long> genreIds) {
         if (genreIds == null || genreIds.isEmpty()) {
             return false;
         }

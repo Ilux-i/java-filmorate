@@ -36,6 +36,9 @@ public class UserService {
     public User addUser(final User user) {
         // Проверка валидации
         if (valid(user)) {
+            if(user.getName() == null || user.getName().isEmpty()) {
+                user.setName(user.getLogin());
+            }
             // Добавление
             User result = userStorage.addUser(user);
             if (result != null) {

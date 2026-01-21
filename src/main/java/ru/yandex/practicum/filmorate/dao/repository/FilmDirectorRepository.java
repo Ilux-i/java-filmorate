@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.dto.film_director.FilmDirectorDto;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Repository
@@ -45,7 +46,7 @@ public class FilmDirectorRepository extends BaseRepository<FilmDirectorDto> {
     }
 
     // Добавление списка режиссёров к фильму по id
-    public void addDirectorsToFilm(long filmId, List<Long> directorIds) {
+    public void addDirectorsToFilm(long filmId, Set<Long> directorIds) {
         if (directorIds == null || directorIds.isEmpty()) {
             return;
         }

@@ -41,7 +41,7 @@ public class FilmDbStorage implements FilmStorage {
         if (film.getDirectors() != null) {
             filmDirectorRepository.addDirectorsToFilm(
                     result.getId(),
-                    film.getDirectors().stream().map(Director::getId).toList()
+                    film.getDirectors().stream().map(Director::getId).collect(Collectors.toSet())
             );
         }
         return fullFilm(result);
@@ -112,8 +112,8 @@ public class FilmDbStorage implements FilmStorage {
 
     // Добавление жанров в фильм
     @Override
-    public List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds) {
-        return filmGenreRepository.addGenresToFilm(filmId, genreIds);
+    public void addGenresToFilm(long filmId, Set<Long> genreIds) {
+        filmGenreRepository.addGenresToFilm(filmId, genreIds);
     }
 
     // Удаление жанра из фильма
@@ -124,8 +124,8 @@ public class FilmDbStorage implements FilmStorage {
 
     // Удаление жанров из фильма
     @Override
-    public boolean removeGenresInFilm(long filmId, List<Long> genresId) {
-        return filmGenreRepository.removeGenres(filmId, genresId);
+    public void removeGenresInFilm(long filmId, Set<Long> genresId) {
+        filmGenreRepository.removeGenres(filmId, genresId);
     }
 
     // Поставить лайк

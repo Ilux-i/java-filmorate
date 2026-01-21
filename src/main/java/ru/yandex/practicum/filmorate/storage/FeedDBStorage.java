@@ -29,9 +29,7 @@ public class FeedDBStorage {
     }
 
     public Collection<Feed> getFeed(Long userId) {
-        if (userId == null || userStorage.contains(userId)) {
-            throw new ObjectNotFoundException("Пользователя с id: " + userId + " не существует");
-        }
+        userStorage.getUserById(userId);
         return feedRepository.findByUserId(userId);
     }
 }
