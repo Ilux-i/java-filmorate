@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dao.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dto.film_genre.FilmGenreDto;
-import ru.yandex.practicum.filmorate.mapper.FilmGenreMapper;
 
 import java.util.ArrayList;
 import java.util.Collections;
