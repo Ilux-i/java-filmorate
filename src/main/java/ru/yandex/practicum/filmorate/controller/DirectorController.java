@@ -1,7 +1,9 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
@@ -9,6 +11,7 @@ import ru.yandex.practicum.filmorate.service.DirectorService;
 import java.util.Collection;
 
 @Slf4j
+@Validated
 @RestController()
 @RequestMapping("/directors")
 @RequiredArgsConstructor
@@ -18,13 +21,13 @@ public class DirectorController {
 
     // Добавление режиссёра
     @PostMapping
-    public Director add(@RequestBody final Director director) {
+    public Director add(@Valid @RequestBody final Director director) {
         return directorService.create(director);
     }
 
     // Обновление режиссёра
     @PutMapping
-    public Director update(@RequestBody final Director director) {
+    public Director update(@Valid @RequestBody final Director director) {
         return directorService.update(director);
     }
 

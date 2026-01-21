@@ -64,6 +64,10 @@ public class ReviewService {
 
         Review existing = reviewStorage.getReview(request.getReviewId());
 
+        if (request.getUserId() == null) {
+            throw new ValidationException("Требуется userId для проверки авторства");
+        }
+
         // Проверка авторства
         if (!existing.getUserId().equals(request.getUserId())) {
             throw new ValidationException("Только автор может изменять отзыв");
@@ -94,8 +98,12 @@ public class ReviewService {
     // Удаление отзыва
     public void deleteReview(long reviewId) {
         // Вносим в ленту новостей пользователя информацию об удалении отзыва
-        feedDBStorage.addFeed(reviewStorage.getReview(reviewId).getUserId(),
-                EventType.REVIEW, Operation.REMOVE, reviewId);
+        feedDBStorage.addFeed(
+                reviewStorage.getReview(reviewId).getUserId(),
+                EventType.REVIEW,
+                Operation.REMOVE,
+                reviewId
+        );
 
         reviewStorage.deleteReview(reviewId);
         log.info("Отзыв удален: {}", reviewId);

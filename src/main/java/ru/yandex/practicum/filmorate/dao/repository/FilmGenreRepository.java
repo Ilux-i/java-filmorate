@@ -24,7 +24,8 @@ public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
 
     // Получение списка FilmGenreDto в порядке возрастания genreId
     public List<FilmGenreDto> findAllByFilm(long filmId) {
-        return findMany(FIND_ALL_QUERY, filmId);
+        List<FilmGenreDto> filmGenres = findMany(FIND_ALL_QUERY, filmId);
+        return filmGenres;
     }
 
     // Добавление связи жанр-фильм

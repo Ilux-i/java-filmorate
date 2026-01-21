@@ -13,6 +13,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class FeedDBStorage {
     private final FeedRepository feedRepository;
+    private final UserStorage UserStorage;
 
     public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
         Feed feed = new Feed();
@@ -27,6 +28,7 @@ public class FeedDBStorage {
     }
 
     public Collection<Feed> getFeed(Long userId) {
+        if (userId == null || UserStorage.contains(userId)) {}
         return feedRepository.findByUserId(userId);
     }
 }

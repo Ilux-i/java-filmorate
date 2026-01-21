@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.service.GenreService;
 import ru.yandex.practicum.filmorate.service.MpaService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static ru.yandex.practicum.filmorate.mapper.FilmGenreMapper.mapToFilmGenreDto;
 import static ru.yandex.practicum.filmorate.mapper.LikeMapper.mapToLikeDto;
@@ -43,13 +44,13 @@ public class FilmDbStorage implements FilmStorage {
                     film.getDirectors().stream().map(Director::getId).toList()
             );
         }
-        return result;
+        return fullFilm(result);
     }
 
     // Обновление фильма
     @Override
     public Film updateFilm(Film film) {
-        return filmRepository.update(film);
+        return fullFilm(filmRepository.update(film));
     }
 
     // Удаление фильма
@@ -62,17 +63,10 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmById(long filmId) {
         // Проверка на пустоту
-        Film film = filmRepository.findById(filmId)
-                .orElseThrow(() -> new ObjectNotFoundException("User with id " + filmId + " not found"));
-        // Заполнение рейтинга
-        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
-        // Заполнение жанра
-        film.setGenres(getGenresByFilm(film.getId()));
-        // Заполнение лайков
-        likeRepository.countLikesByFilmId(film.getId());
-        // Заполнение режиссёрами
-        film.setDirectors(directorService.getDirectorsByFilm(film.getId()));
-        return film;
+        return fullFilm(
+                filmRepository.findById(filmId)
+                        .orElseThrow(() -> new ObjectNotFoundException("User with id " + filmId + " not found"))
+        );
     }
 
     // Получение популярных фильмов
@@ -100,14 +94,14 @@ public class FilmDbStorage implements FilmStorage {
     // Получение списка жанров по фильму
     @Override
     public Set<Genre> getGenresByFilm(long filmId) {
-        Set<Genre> result = new HashSet<>();
-        filmGenreRepository.findAllByFilm(filmId)
-                .forEach(dto -> result.add(Genre
-                        .builder()
+        Set<Genre> res = filmGenreRepository.findAllByFilm(filmId)
+                .stream()
+                .map(dto -> Genre.builder()
                         .id(dto.getGenreId())
                         .name(genreService.getGenre(dto.getGenreId()).getName())
-                        .build()));
-        return result;
+                        .build())
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+        return res;
     }
 
     // Добавление жанра к фильму
@@ -154,6 +148,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
+        // Проверка на наличие режиссёра
+        directorService.getById(directorId);
         return fullFilms(filmRepository.getFilmsByDirector(directorId, sortBy));
     }
 
@@ -196,5 +192,17 @@ public class FilmDbStorage implements FilmStorage {
                 .peek(film -> film.setDirectors(directorService
                         .getDirectorsByFilm(film.getId())))
                 .toList();
+    }
+
+    private Film fullFilm(Film film) {
+        // Заполнение рейтинга
+        film.setMpa(mpaService.getMpa(film.getMpa().getId()));
+        // Заполнение жанра
+        film.setGenres(getGenresByFilm(film.getId()));
+        // Заполнение лайков
+        likeRepository.countLikesByFilmId(film.getId());
+        // Заполнение режиссёрами
+        film.setDirectors(directorService.getDirectorsByFilm(film.getId()));
+        return film;
     }
 }
