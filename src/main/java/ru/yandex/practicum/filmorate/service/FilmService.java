@@ -73,15 +73,10 @@ public class FilmService {
             Film result = updateFilmFields(oldFilm, updateFilm);
             // Валидация
             if (valid(result)) {
-                if (film.getGenres() != null) {
-                    updateGenres(result.getId(), film.getGenres());
-                }
-                if (film.getDirectors() != null) {
-                    updateDirectors(
-                            result.getId(),
-                            film.getDirectors()
-                    );
-                }
+                updateGenres(result.getId(), film.getGenres());
+                updateDirectors(
+                        result.getId(),
+                        film.getDirectors());
                 return filmStorage.updateFilm(result);
             } else {
                 log.warn("Film {} not valid when updated", result);
@@ -166,7 +161,7 @@ public class FilmService {
             filmStorage.removeGenresInFilm(filmId, oldGenres);
         }
 
-        if (!genres.isEmpty()) {
+        if (genres != null && !genres.isEmpty()) {
             filmStorage.addGenresToFilm(
                     filmId,
                     genres.stream()
@@ -195,7 +190,7 @@ public class FilmService {
             filmDirectorRepository.removeFilmDirectorByPair(oldDirectors);
         }
 
-        if (!directors.isEmpty()) {
+        if (directors != null && !directors.isEmpty()) {
             filmDirectorRepository.addDirectorsToFilm(
                     filmId,
                     directors
