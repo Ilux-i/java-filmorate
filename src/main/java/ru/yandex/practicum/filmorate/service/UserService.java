@@ -104,7 +104,6 @@ public class UserService {
         long id = userStorage.addFriend(mapToAllFriendDto(idUser, idFriend));
         // Вносим в ленту новостей пользователя информацию об добавлении в друзья
         feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.ADD, idFriend);
-        feedDBStorage.addFeed(idFriend, EventType.FRIEND, Operation.ADD, idUser);
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
         return user;
     }
@@ -116,7 +115,6 @@ public class UserService {
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
             // Вносим в ленту новостей пользователя информацию об удалении из друзей
             feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.REMOVE, idFriend);
-            feedDBStorage.addFeed(idFriend, EventType.FRIEND, Operation.ADD, idUser);
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }
     }
