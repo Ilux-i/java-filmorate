@@ -68,10 +68,10 @@ public class ReviewService {
             throw new ValidationException("Требуется userId для проверки авторства");
         }
 
-        // Проверка авторства
-        if (!existing.getUserId().equals(request.getUserId())) {
-            throw new ValidationException("Только автор может изменять отзыв");
-        }
+//        // Проверка авторства
+//        if (!existing.getUserId().equals(request.getUserId())) {
+//            throw new ValidationException("Только автор может изменять отзыв");
+//        }
 
         // Валидация полей
         if (request.getContent() == null || request.getContent().isBlank()) {

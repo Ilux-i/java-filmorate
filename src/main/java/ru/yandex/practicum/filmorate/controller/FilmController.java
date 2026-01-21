@@ -17,7 +17,6 @@ import java.util.List;
 public class FilmController {
 
     private final FilmService filmService;
-    private final RecommendationService recommendationService;
 
     // Добавление фильма
     @PostMapping

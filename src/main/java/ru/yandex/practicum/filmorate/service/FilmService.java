@@ -73,13 +73,16 @@ public class FilmService {
             Film result = updateFilmFields(oldFilm, updateFilm);
             // Валидация
             if (valid(result)) {
-                updateGenres(result.getId(), film.getGenres());
-                updateDirectors(
-                        result.getId(),
-                        film.getDirectors()
-                );
-                filmStorage.updateFilm(result);
-                return result;
+                if (film.getGenres() != null) {
+                    updateGenres(result.getId(), film.getGenres());
+                }
+                if (film.getDirectors() != null) {
+                    updateDirectors(
+                            result.getId(),
+                            film.getDirectors()
+                    );
+                }
+                return filmStorage.updateFilm(result);
             } else {
                 log.warn("Film {} not valid when updated", result);
                 throw new ValidationException("Film no valid");

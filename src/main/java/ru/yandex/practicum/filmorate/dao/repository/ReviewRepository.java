@@ -19,7 +19,7 @@ public class ReviewRepository extends BaseRepository<Review> {
     private static final String INSERT_QUERY =
             "INSERT INTO reviews(content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
     private static final String UPDATE_QUERY =
-            "UPDATE reviews SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
+            "UPDATE reviews SET content = ?, is_positive = ?, useful = ?, user_id = ? WHERE review_id = ?";
     private static final String DELETE_QUERY = "DELETE FROM reviews WHERE review_id = ?";
     private static final String EXISTS_BY_USER_AND_FILM_QUERY =
             "SELECT COUNT(*) FROM reviews WHERE user_id = ? AND film_id = ?";
@@ -78,6 +78,7 @@ public class ReviewRepository extends BaseRepository<Review> {
                 review.getContent(),
                 review.getIsPositive(),
                 review.getUseful() != null ? review.getUseful() : 0,
+                review.getUserId(),
                 review.getReviewId()
         );
 
