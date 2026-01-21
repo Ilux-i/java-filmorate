@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.sql.Date;
@@ -152,7 +153,9 @@ public class FilmRepository extends BaseRepository<Film> {
                 film.getMpa().getId(),
                 film.getId()
         );
-        return film;
+        // Загружаем обновленные данные
+        return findById(film.getId())
+                .orElseThrow(() -> new ObjectNotFoundException("Film disappeared after update"));
     }
 
     // Удаление фильма по id

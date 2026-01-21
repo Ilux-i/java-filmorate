@@ -97,9 +97,11 @@ public class UserService {
     public User addFriend(final long idUser, final long idFriend) {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
+
         long id = userStorage.addFriend(mapToAllFriendDto(idUser, idFriend));
         // Вносим в ленту новостей пользователя информацию об добавлении в друзья
         feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.ADD, idFriend);
+        feedDBStorage.addFeed(idFriend, EventType.FRIEND, Operation.ADD, idUser);
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
         return user;
     }
@@ -111,6 +113,7 @@ public class UserService {
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
             // Вносим в ленту новостей пользователя информацию об удалении из друзей
             feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.REMOVE, idFriend);
+            feedDBStorage.addFeed(idFriend, EventType.FRIEND, Operation.ADD, idUser);
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }
     }
@@ -161,8 +164,12 @@ public class UserService {
 
     // Получение списка общих друзей между двумя пользователями
     public Collection<User> getListOfMutualFriends(long id, long otherId) {
-        userStorage.getUserById(id);
-        userStorage.getUserById(otherId);
+        if (!userStorage.contains(id)) {
+            throw new ObjectNotFoundException("Пользователя с таким id: " + id + ", не найдено");
+        }
+        if (!userStorage.contains(otherId)) {
+            throw new ObjectNotFoundException("Пользователя с таким id: " + otherId + ", не найдено");
+        }
         Set<Long> friends = userStorage.getFriendsByUser(id).keySet();
         return userStorage.getUsersByListId(
                 userStorage.getFriendsByUser(otherId).keySet()

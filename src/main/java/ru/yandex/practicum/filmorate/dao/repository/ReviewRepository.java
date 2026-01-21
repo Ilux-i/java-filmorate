@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.repository;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.List;
@@ -58,16 +59,33 @@ public class ReviewRepository extends BaseRepository<Review> {
         return review;
     }
 
-    // Обновить отзыв
+//    // Обновить отзыв
+//    public Review update(Review review) {
+//        update(
+//                UPDATE_QUERY,
+//                review.getContent(),
+//                review.getIsPositive(),
+//                review.getUseful(),
+//                review.getReviewId()
+//        );
+//        return review;
+//    }
+
     public Review update(Review review) {
+        // Выполняем UPDATE
         update(
                 UPDATE_QUERY,
                 review.getContent(),
                 review.getIsPositive(),
-                review.getUseful(),
+                review.getUseful() != null ? review.getUseful() : 0,
                 review.getReviewId()
         );
-        return review;
+
+        // Загружаем обновленные данные
+        return findById(review.getReviewId())
+                .orElseThrow(() ->
+                        new ObjectNotFoundException("Отзыв пропал после обновления"));
+
     }
 
     // Удалить отзыв по ID

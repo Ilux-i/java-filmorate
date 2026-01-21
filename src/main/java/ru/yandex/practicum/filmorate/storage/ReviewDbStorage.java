@@ -37,6 +37,7 @@ public class ReviewDbStorage implements ReviewStorage {
         Review review = getReview(request.getReviewId());
         review.setContent(request.getContent());
         review.setIsPositive(request.getIsPositive());
+        review.setUserId(request.getUserId());
         return reviewRepository.update(review);
     }
 

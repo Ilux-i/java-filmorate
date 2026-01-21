@@ -82,10 +82,6 @@ public class FilmService {
                             film.getDirectors().stream().map(Director::getId).collect(Collectors.toSet())
                     );
                     result.setDirectors(film.getDirectors());
-//                    result.setDirectors(directorRepository.findAllByList(filmDirectorRepository
-//                            .findAllByFilm(result.getId()).stream()
-//                                .map(FilmDirectorDto::getDirectorId)
-//                                .toList()));
                 }
                 filmStorage.updateFilm(result);
                 return result;
@@ -121,7 +117,8 @@ public class FilmService {
 
     // Получение всех фильмов
     public Collection<Film> getAllFilms() {
-        return filmStorage.getAllFilms();
+        Collection<Film> res = filmStorage.getAllFilms();
+        return res;
     }
 
     // Добавление лайка к фильму

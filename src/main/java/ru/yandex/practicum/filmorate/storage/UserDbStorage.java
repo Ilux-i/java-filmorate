@@ -109,12 +109,6 @@ public class UserDbStorage implements UserStorage {
         return friendsRepository.addFriend(dto);
     }
 
-//    // Подтверждение запроса в друзья
-//    @Override
-//    public long confirmedFriend(PairFriendDto dto) {
-//        return friendsRepository.confirmFriend(dto);
-//    }
-
     // Получения друзей
     @Override
     public HashMap<Long, FriendshipStatus> getFriendsByUser(long userId) {
@@ -123,15 +117,6 @@ public class UserDbStorage implements UserStorage {
                 .forEach(dto -> result.put(dto.getFriendId(), FriendshipStatus.CONFIRMED));
         return result;
     }
-
-//    // Получение запросов в друзья
-//    @Override
-//    public HashSet<Long> getFriendRequestsByUser(User user) {
-//        HashSet<Long> result = new HashSet<>();
-//        friendsRepository.findFriendRequestsByUserId(user.getId())
-//                .forEach(friendDto -> result.add(friendDto.getFriendId()));
-//        return result;
-//    }
 
     // Удаление друга
     @Override

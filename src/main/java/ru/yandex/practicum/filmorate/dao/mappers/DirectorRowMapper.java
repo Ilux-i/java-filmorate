@@ -11,9 +11,18 @@ import java.sql.SQLException;
 public class DirectorRowMapper implements RowMapper<Director> {
     @Override
     public Director mapRow(ResultSet resultSet, int rowNum) throws SQLException {
+        String name = resultSet.getString("name");
+
+        // Очистка от пробелов
+        if (name != null) {
+            name = name.trim();
+        } else {
+            name = "";
+        }
+
         return Director.builder()
                 .id(resultSet.getLong("id"))
-                .name(resultSet.getString("name"))
+                .name(name)
                 .build();
     }
 }

@@ -27,27 +27,29 @@ public class DirectorService {
 
     // Добавление режиссёра
     public Director create(final Director director) {
-        // Проверка на валидацию
-        if (director != null) {
+        // Валидация
+        if (director.getName() != null) {
             return directorRepository.add(director);
         } else {
-            log.warn("Film {} not valid when added", director);
-            throw new ValidationException("Film no valid");
+            log.warn("User does not have an Name");
+            throw new ValidationException("Name is missing");
         }
     }
 
     // Обновление режиссёра
     public Director update(final Director director) {
+        // Валидация
         if (director.getId() != null) {
             if (director.getName() != null) {
                 getById(director.getId());
                 return directorRepository.update(director);
             } else {
-                return null;
+                log.info("User does not have an Name");
+                throw new ValidationException("Name is missing");
             }
         } else {
             log.info("User does not have an Id");
-            throw new ObjectNotFoundException("Id is missing");
+            throw new ValidationException("Id is missing");
         }
     }
 
@@ -64,6 +66,7 @@ public class DirectorService {
 
     // Удаление режиссёра по id
     public void remove(long directorId) {
+        getById(directorId);
         try {
             List<FilmDirectorDto> pairs = filmDirectorRepository.findAllByDirector(directorId);
             filmDirectorRepository.removeFilmDirectorByPair(pairs);
