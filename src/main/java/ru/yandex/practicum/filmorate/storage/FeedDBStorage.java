@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.dao.repository.FeedRepository;
+import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.Operation;
@@ -13,7 +14,7 @@ import java.util.Collection;
 @RequiredArgsConstructor
 public class FeedDBStorage {
     private final FeedRepository feedRepository;
-    private final UserStorage UserStorage;
+    private final UserStorage userStorage;
 
     public void addFeed(Long userId, EventType eventType, Operation operation, Long entityId) {
         Feed feed = new Feed();
@@ -28,7 +29,9 @@ public class FeedDBStorage {
     }
 
     public Collection<Feed> getFeed(Long userId) {
-        if (userId == null || UserStorage.contains(userId)) {}
+        if (userId == null || userStorage.contains(userId)) {
+            throw new ObjectNotFoundException("Пользователя с id: " + userId + " не существует");
+        }
         return feedRepository.findByUserId(userId);
     }
 }
