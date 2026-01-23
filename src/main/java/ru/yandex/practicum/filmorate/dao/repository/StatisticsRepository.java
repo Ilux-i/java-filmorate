@@ -62,7 +62,8 @@ public class StatisticsRepository {
                     SELECT f.*
                     FROM films f
                     JOIN likes l ON f.id = l.film_id
-                    WHERE l.user_id IN (" + placeholders + ")
+                    WHERE l.user_id IN (""" + placeholders + """
+                    )
                     AND f.id NOT IN (SELECT film_id FROM likes WHERE user_id = ?)
                     GROUP BY f.id
                     ORDER BY COUNT(l.id) DESC
