@@ -149,11 +149,6 @@ public class UserService {
                 .toList());
     }
 
-//    // Подтверждение запроса добавления в друзья
-//    public long confirmedFriend(final long idUser, final long idFriend) {
-//        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
-//    }
-
     private static boolean valid(User user) {
         return user.getEmail() != null && !user.getEmail().isEmpty() &&
                 user.getEmail().contains("@") &&

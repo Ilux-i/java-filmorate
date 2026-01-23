@@ -11,7 +11,6 @@ import ru.yandex.practicum.filmorate.service.DirectorService;
 import java.util.Collection;
 
 @Slf4j
-@Validated
 @RestController()
 @RequestMapping("/directors")
 @RequiredArgsConstructor

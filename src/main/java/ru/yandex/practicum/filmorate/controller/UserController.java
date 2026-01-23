@@ -86,6 +86,4 @@ public class UserController {
     public Collection<Feed> getFeed(@PathVariable final long userId) {
         return userService.getFeed(userId);
     }
-
-
 }

@@ -45,5 +45,4 @@ public class ErrorHandler {
                 "Непредвиденная ошибка: " + e.getMessage()
         );
     }
-
 }

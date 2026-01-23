@@ -15,6 +15,7 @@ import java.util.Optional;
 @Component("ReviewDbStorage")
 @RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
+
     private final ReviewRepository reviewRepository;
     private final ReviewLikeRepository reviewLikeRepository;
 

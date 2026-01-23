@@ -14,14 +14,44 @@ import java.util.Optional;
 @Slf4j
 @Repository
 public class UserRepository extends BaseRepository<User> {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM users";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
-    private static final String FIND_BY_LIST_ID_TEMPLATE = "SELECT * FROM users WHERE id in (%s)";
-    private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) " +
-            "VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
-    private static final String EXISTS = "SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)";
+
+    private static final String FIND_ALL_QUERY = """
+            SELECT *
+            FROM users
+            """;
+
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT *
+            FROM users
+            WHERE id = ?
+            """;
+
+    private static final String FIND_BY_LIST_ID_TEMPLATE = """
+            SELECT *
+            FROM users
+            WHERE id in (%s)
+            """;
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO users(email, login, name, birthday)
+            VALUES (?, ?, ?, ?)
+            """;
+
+    private static final String UPDATE_QUERY = """
+            UPDATE users
+            SET email = ?, login = ?, name = ?, birthday = ?
+            WHERE id = ?
+            """;
+
+    private static final String DELETE_QUERY = """
+            DELETE
+            FROM users
+            WHERE id = ?
+            """;
+
+    private static final String EXISTS = """
+            SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)
+            """;
 
     public UserRepository(JdbcTemplate jdbc, UserRowMapper mapper) {
         super(jdbc, mapper);

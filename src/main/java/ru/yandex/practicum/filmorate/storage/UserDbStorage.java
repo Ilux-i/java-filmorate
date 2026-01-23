@@ -128,5 +128,4 @@ public class UserDbStorage implements UserStorage {
     public boolean contains(long id) {
         return userRepository.contains(id);
     }
-
 }
