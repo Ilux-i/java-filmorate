@@ -22,11 +22,9 @@ public class MpaController {
         return mpaService.getMpa(mpaId);
     }
 
-
     // Получение всех возможных рейтингов
     @GetMapping
     public Collection<Mpa> getAllMpa() {
         return mpaService.getAll();
     }
-
 }

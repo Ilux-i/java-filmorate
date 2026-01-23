@@ -1,8 +1,8 @@
 package ru.yandex.practicum.filmorate.dao.repository;
 
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.RatingRowMapper;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.util.List;
@@ -10,10 +10,21 @@ import java.util.Optional;
 
 @Repository
 public class RatingRepository extends BaseRepository<Mpa> {
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM mpa WHERE id = ?";
-    private static final String FIND_ALL_QUERY = "SELECT * FROM mpa";
 
-    public RatingRepository(JdbcTemplate jdbc, RowMapper<Mpa> mapper) {
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT *
+            FROM mpa
+            WHERE id = ?
+            """;
+
+    private static final String FIND_ALL_QUERY = """
+            SELECT *
+            FROM mpa
+            ORDER BY id
+            """;
+
+    // Используем конкретный тип RatingRowMapper
+    public RatingRepository(JdbcTemplate jdbc, RatingRowMapper mapper) {
         super(jdbc, mapper);
     }
 
@@ -22,9 +33,8 @@ public class RatingRepository extends BaseRepository<Mpa> {
         return findOne(FIND_BY_ID_QUERY, ratingId);
     }
 
-    // Получение списка всех рейтингов
+    // Получение списка всех рейтингов в порядке убывания
     public List<Mpa> findAll() {
         return findMany(FIND_ALL_QUERY);
     }
-
 }

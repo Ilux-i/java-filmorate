@@ -4,12 +4,17 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.repository.RatingRepository;
+import ru.yandex.practicum.filmorate.dao.repository.FilmDirectorRepository;
 import ru.yandex.practicum.filmorate.dto.film.UpdateFilmRequest;
+import ru.yandex.practicum.filmorate.dto.film_director.FilmDirectorDto;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -39,6 +44,10 @@ public class FilmService {
     private final FilmStorage filmStorage;
     @Qualifier("UserDbStorage")
     private final UserStorage userStorage;
+    @Qualifier("FeedDbStorage")
+    private final FeedDBStorage feedDBStorage;
+
+    private final FilmDirectorRepository filmDirectorRepository;
 
     // Добавление фильма
     public Film addFilm(final Film film) {
@@ -52,7 +61,7 @@ public class FilmService {
     }
 
     // Обновление фильма
-    public Film updateFilm(final Film film) {
+    public Film updateFilm(Film film) {
         if (film.getId() != null) {
             // Старые данные фильма
             Film oldFilm = filmStorage.getFilmById(film.getId());
@@ -60,11 +69,12 @@ public class FilmService {
             UpdateFilmRequest updateFilm = mapToUpdateFilmRequest(film);
             // Фильм из старых и обновлённый данных
             Film result = updateFilmFields(oldFilm, updateFilm);
-            // Вальдация
+            // Валидация
             if (valid(result)) {
-                if (!result.getGenres().isEmpty()) {
-                    updateGenres(result.getId(), result.getGenres());
-                }
+                updateGenres(result.getId(), film.getGenres());
+                updateDirectors(
+                        result.getId(),
+                        film.getDirectors());
                 return filmStorage.updateFilm(result);
             } else {
                 log.warn("Film {} not valid when updated", result);
@@ -76,26 +86,38 @@ public class FilmService {
         }
     }
 
+    // Удаление фильма
+    public void remove(long id) {
+        filmDirectorRepository.removeFilmDirectorByPair(filmDirectorRepository
+                .findAllByFilm(id)
+        );
+        filmStorage.deleteFilm(id);
+    }
+
     // Получение фильма по id
     public Film getFilmById(final long id) {
         return filmStorage.getFilmById(id);
     }
 
     // Получение популярных фильмов
-    public Collection<Film> getPopularFilms(Long count) {
-        return filmStorage.getPopularFilms(count);
+    public Collection<Film> getPopularFilms(Long genreId, Integer year, Long limit) {
+        return filmStorage.getPopularFilms(genreId, year, limit);
     }
+
+
 
     // Получение всех фильмов
     public Collection<Film> getAllFilms() {
-        return filmStorage.getAllFilms().values();
+        return filmStorage.getAllFilms();
     }
 
-    // Добавление лайкка к фильму
+    // Добавление лайка к фильму
     public Film addLike(final long userId, final long filmId) {
         Film film = filmStorage.getFilmById(filmId);
         userStorage.getUserById(userId);
         filmStorage.setLike(userId, filmId);
+        // Вносим в ленту новостей пользователя информацию об добавлении лайка фильму
+        feedDBStorage.addFeed(userId, EventType.LIKE, Operation.ADD, filmId);
         log.info("Пользователь с id: {}, поставил лайк на фильм с id: {}", userId, filmId);
         return film;
     }
@@ -106,45 +128,53 @@ public class FilmService {
         userStorage.getUserById(userId);
 
         if (filmStorage.removeLike(userId, filmId)) {
+            // Вносим в ленту новостей пользователя информацию об удалении лайка у фильма
+            feedDBStorage.addFeed(userId, EventType.LIKE, Operation.REMOVE, filmId);
             log.info("Пользователь с id: {}, удалил лайк на фильм с id: {}", userId, filmId);
         } else {
             log.info("Пользователь с id: {}, не ставил лайк на фильм с id: {}", userId, filmId);
         }
     }
 
-    // Получение количества лайков
-    public long getCountLikes(Film film) {
-        return filmStorage.getLikes(film.getId());
-    }
-
-    // Добавление жанра к фильму
-    public void addGenreInFilm(long filmId, long genreId) {
-        try {
-            filmStorage.addGenreInFilm(filmId, genreId);
-        } catch (IllegalArgumentException e) {
-            log.warn("Жанра '{}' не существует", genreId);
-        }
-    }
-
     // Обновление списка жанров к фильму
     private void updateGenres(long filmId, Set<Genre> genres) {
         // Старые жанры
-        Set<Genre> oldGenres = filmStorage.getGenresByFilm(filmId);
-
-        // Жанры, которые надо удалить
-        List<Long> toRemove = oldGenres.stream()
-                .filter(genre -> !genres.contains(genre))
+        Set<Long> oldGenres = filmStorage.getGenresByFilm(filmId).stream()
                 .map(Genre::getId)
-                .collect(Collectors.toList());
+                .collect(Collectors.toSet());
 
-        // Жанры, которые надо добавить
-        List<Long> toAdd = genres.stream()
-                .filter(genre -> !oldGenres.contains(genre))
-                .map(Genre::getId)
-                .collect(Collectors.toList());
+        if (!oldGenres.isEmpty()) {
+            filmStorage.removeGenresInFilm(filmId, oldGenres);
+        }
 
-        filmStorage.removeGenresInFilm(filmId, toRemove);
-        filmStorage.addGenresToFilm(filmId, toAdd);
+        if (genres != null && !genres.isEmpty()) {
+            filmStorage.addGenresToFilm(
+                    filmId,
+                    genres.stream()
+                            .map(Genre::getId)
+                            .collect(Collectors.toSet())
+            );
+        }
+    }
+
+    // Обновление списка режиссёров к фильму
+    private void updateDirectors(long filmId, Set<Director> directors) {
+        // Старые режиссёры
+        List<FilmDirectorDto> oldDirectors = filmDirectorRepository.findAllByFilm(filmId);
+
+        if (!oldDirectors.isEmpty()) {
+            filmDirectorRepository.removeFilmDirectorByPair(oldDirectors);
+        }
+
+        if (directors != null && !directors.isEmpty()) {
+            filmDirectorRepository.addDirectorsToFilm(
+                    filmId,
+                    directors
+                            .stream()
+                            .map(Director::getId)
+                            .collect(Collectors.toSet())
+            );
+        }
     }
 
     // Валидация
@@ -160,6 +190,49 @@ public class FilmService {
                 film.getDescription().length() <= MAX_LENGTH_DESCRIPTION &&
                 film.getReleaseDate().isAfter(CINEMA_BIRTHDAY) &&
                 film.getDuration() > 0;
+    }
+
+    // Получение общих фильмов
+    public Collection<Film> getCommonFilms(long userId, long friendId) {
+        // Валидация
+        if (userId < 1 || friendId < 1) {
+            log.warn("Не найден пользователь или друг: {}, {}", userId, friendId);
+            throw new ValidationException("Не найден пользователь или друг");
+        }
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        Collection<Film> common = filmStorage.getCommonFilms(userId, friendId);
+        log.info("Общие фильмы для пользователей {} и {}: {} штук", userId, friendId, common.size());
+        return common;
+    }
+
+    public Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy) {
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
+
+    // Поиск фильмов по аргументам
+    public Collection<Film> searchFilms(String query, String by) {
+        return switch (by) {
+            case "title" -> searchByTitle(query);
+            case "director" -> searchByDirector(query);
+            case "title,director", "director,title" -> searchByDirectorAndTitle(query);
+            default -> throw new ValidationException("Нет поиска по " + by + " аргументу");
+        };
+    }
+
+    // Поиск фильмов по названию
+    private Collection<Film> searchByTitle(String query) {
+        return filmStorage.searchByTitle(query.toLowerCase());
+    }
+
+    // Поиск фильмов по режиссёру
+    private Collection<Film> searchByDirector(String query) {
+        return filmStorage.searchByDirector(query);
+    }
+
+    // Поиск фильмов по режиссёру и названию
+    private Collection<Film> searchByDirectorAndTitle(String query) {
+        return filmStorage.searchByAll(query);
     }
 
 }

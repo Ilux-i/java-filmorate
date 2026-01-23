@@ -1,0 +1,163 @@
+package ru.yandex.practicum.filmorate.dao.repository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dto.statistics.GenreYearStatistic;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.dao.mappers.FilmRowMapper;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+@Slf4j
+@Repository
+@RequiredArgsConstructor
+public class StatisticsRepository {
+
+    private final JdbcTemplate jdbc;
+    private final FilmRowMapper filmRowMapper;
+
+    // Получение рекомендаций для пользователя на основе коллаборативной фильтрации
+    public List<Film> getRecommendationsForUser(Long userId) {
+        log.debug("getRecommendationsForUser called with userId: {}", userId);
+
+        // Проверяем, есть ли у пользователя лайки
+        String checkUserLikesSql = "SELECT COUNT(*) FROM likes WHERE user_id = ?";
+        Integer userLikeCount = jdbc.queryForObject(checkUserLikesSql, Integer.class, userId);
+
+        if (userLikeCount == null || userLikeCount == 0) {
+            log.debug("User {} has no likes, returning empty list", userId);
+            return Collections.emptyList();
+        }
+
+        // Находим пользователей с похожими вкусами
+        String similarUsersSql = """
+                SELECT l2.user_id
+                FROM likes l1
+                JOIN likes l2 ON l1.film_id = l2.film_id
+                WHERE l1.user_id = ?
+                AND l2.user_id != ?
+                GROUP BY l2.user_id
+                ORDER BY COUNT(DISTINCT l1.film_id) DESC
+                LIMIT 5
+                """;
+
+        try {
+            List<Long> similarUserIds = jdbc.queryForList(similarUsersSql, Long.class, userId, userId);
+            log.debug("Found {} similar users for userId: {}", similarUserIds.size(), userId);
+
+            if (similarUserIds.isEmpty()) {
+                log.debug("No similar users found for userId: {}", userId);
+                return Collections.emptyList();
+            }
+
+            // Находим фильмы, которые понравились похожим пользователям, но не текущему
+            String placeholders = String.join(",", Collections.nCopies(similarUserIds.size(), "?"));
+            String recommendationsSql = """
+                    SELECT f.*
+                    FROM films f
+                    JOIN likes l ON f.id = l.film_id
+                    WHERE l.user_id IN (""" + placeholders + """
+                    )
+                    AND f.id NOT IN (SELECT film_id FROM likes WHERE user_id = ?)
+                    GROUP BY f.id
+                    ORDER BY COUNT(l.id) DESC
+                    LIMIT 10
+                    """;
+
+            List<Object> params = new ArrayList<>(similarUserIds);
+            params.add(userId);
+
+            List<Film> result = jdbc.query(recommendationsSql, filmRowMapper, params.toArray());
+            log.debug("getRecommendationsForUser returned {} films for userId: {}", result.size(), userId);
+            return result;
+        } catch (Exception e) {
+            log.error("Error in getRecommendationsForUser for userId {}: ", userId, e);
+            return Collections.emptyList();
+        }
+    }
+
+    // Получение рекомендаций на основе жанров пользователя
+    public List<Film> getGenreBasedRecommendations(Long userId) {
+        log.debug("getGenreBasedRecommendations called with userId: {}", userId);
+
+        // Проверяем, есть ли у пользователя лайки
+        String checkUserLikesSql = "SELECT COUNT(*) FROM likes WHERE user_id = ?";
+        Integer userLikeCount = jdbc.queryForObject(checkUserLikesSql, Integer.class, userId);
+
+        if (userLikeCount == null || userLikeCount == 0) {
+            log.debug("User {} has no likes, cannot get genre-based recommendations", userId);
+            return Collections.emptyList();
+        }
+
+        String sql = """
+                SELECT f.*
+                FROM films f
+                JOIN film_genre fg ON f.id = fg.film_id
+                WHERE fg.genre_id IN (SELECT DISTINCT fg2.genre_id
+                    FROM likes l
+                    JOIN film_genre fg2 ON l.film_id = fg2.film_id
+                    WHERE l.user_id = ?)
+                AND f.id NOT IN (SELECT film_id
+                    FROM likes
+                    WHERE user_id = ?)
+                GROUP BY f.id
+                ORDER BY (
+                    SELECT COUNT(*)
+                    FROM likes l2
+                    WHERE l2.film_id = f.id) DESC
+                "LIMIT 10
+                """;
+
+        try {
+            List<Film> result = jdbc.query(sql, filmRowMapper, userId, userId);
+            log.debug("getGenreBasedRecommendations returned {} films for userId: {}", result.size(), userId);
+            return result;
+        } catch (Exception e) {
+            log.error("Error in getGenreBasedRecommendations for userId {}: ", userId, e);
+            return Collections.emptyList();
+        }
+    }
+
+    // Получение статистики по жанрам и годам
+    public List<GenreYearStatistic> getGenreYearStatistics() {
+        String sql = """
+                SELECT YEAR(f.releaseDate) as year, fg.genre_id as genreId,
+                COUNT(DISTINCT l.id) as likeCount,
+                COUNT(DISTINCT f.id) as filmCount
+                FROM films f
+                LEFT JOIN film_genre fg ON f.id = fg.film_id
+                LEFT JOIN likes l ON f.id = l.film_id
+                WHERE fg.genre_id IS NOT NULL
+                GROUP BY YEAR(f.releaseDate), fg.genre_id
+                ORDER BY year DESC, likeCount DESC
+                """;
+
+        try {
+            return jdbc.query(sql, this::mapToGenreYearStatistic);
+        } catch (Exception e) {
+            log.error("Error in getGenreYearStatistics: ", e);
+            return Collections.emptyList();
+        }
+    }
+
+    // Маппер для статистики
+    private GenreYearStatistic mapToGenreYearStatistic(ResultSet rs, int rowNum) throws SQLException {
+        GenreYearStatistic stat = new GenreYearStatistic();
+        stat.setYear(rs.getInt("year"));
+        stat.setGenreId(rs.getLong("genreId"));
+        stat.setLikeCount(rs.getLong("likeCount"));
+        stat.setFilmCount(rs.getLong("filmCount"));
+        return stat;
+    }
+
+    // Метод для доступа к JdbcTemplate из других сервисов
+    public JdbcTemplate getJdbcTemplate() {
+        return jdbc;
+    }
+}

@@ -5,13 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.FriendsRepository;
-import ru.yandex.practicum.filmorate.dao.repository.UserRepository;
 import ru.yandex.practicum.filmorate.dto.user.UpdateUserRequest;
 import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.mapper.UserMapper;
-import ru.yandex.practicum.filmorate.model.FriendshipStatus;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.FeedDBStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -29,12 +28,17 @@ public class UserService {
     @Autowired
     private final UserStorage userStorage;
     @Autowired
+    private final FeedDBStorage feedDBStorage;
+    @Autowired
     private FriendsRepository friendsRepository;
 
     // Добавление пользователя
     public User addUser(final User user) {
         // Проверка валидации
         if (valid(user)) {
+            if (user.getName() == null || user.getName().isEmpty()) {
+                user.setName(user.getLogin());
+            }
             // Добавление
             User result = userStorage.addUser(user);
             if (result != null) {
@@ -60,7 +64,7 @@ public class UserService {
             User result = UserMapper.updateUserFields(oldUser, updateUser);
             // Проверка валидации
             if (valid(result)) {
-                if (!result.getFriends().isEmpty()) {
+                if (result.getFriends() != null && !result.getFriends().isEmpty()) {
                     updateFriends(result.getId(), result.getFriends());
                 }
                 return userStorage.updateUser(result);
@@ -74,6 +78,19 @@ public class UserService {
         }
     }
 
+    // Удаление пользователя
+    public void remove(long id) {
+        if (!userStorage.contains(id)) {
+            throw new ObjectNotFoundException("Пользователя с таким id не найдено");
+        }
+        userStorage.deleteUser(id);
+    }
+
+    // Получение пользователя по id
+    public User getUserById(final long id) {
+        return userStorage.getUserById(id);
+    }
+
     // Получение всех пользователей
     public Collection<User> getAllUsers() {
         return userStorage.getAllUsers().values();
@@ -83,7 +100,10 @@ public class UserService {
     public User addFriend(final long idUser, final long idFriend) {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
+
         long id = userStorage.addFriend(mapToAllFriendDto(idUser, idFriend));
+        // Вносим в ленту новостей пользователя информацию об добавлении в друзья
+        feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.ADD, idFriend);
         log.info("Пользователи с id: {} отправил запрос на друзья: {}", idUser, idFriend);
         return user;
     }
@@ -93,6 +113,8 @@ public class UserService {
         User user = userStorage.getUserById(idUser);
         userStorage.getUserById(idFriend);
         if (userStorage.removeFriend(mapToUserPairFriendDto(idUser, idFriend))) {
+            // Вносим в ленту новостей пользователя информацию об удалении из друзей
+            feedDBStorage.addFeed(idUser, EventType.FRIEND, Operation.REMOVE, idFriend);
             log.info("Пользователи с id: {} и {}, больше не являются друзьями", idUser, idFriend);
         }
     }
@@ -116,35 +138,44 @@ public class UserService {
 
         // Список друзей на добавление
         Set<Long> toAdd = friends.keySet().stream()
-                .filter(genre -> !oldFriends.contains(genre))
+                .filter(friend -> !oldFriends.contains(friend))
                 .collect(Collectors.toSet());
 
-        friendsRepository.removeFriendsByListId(toRemove.stream().map(friend -> mapToUserPairFriendDto(userId, friend)).toList());
-        friendsRepository.addFriendsByListId(toAdd.stream().map(friend -> mapToUserPairFriendDto(userId, friend)).toList());
+        friendsRepository.removeFriendsByListId(toRemove.stream()
+                .map(friend -> mapToUserPairFriendDto(userId, friend))
+                .toList());
+        friendsRepository.addFriendsByListId(toAdd.stream()
+                .map(friend -> mapToUserPairFriendDto(userId, friend))
+                .toList());
     }
 
-//    // Подтверждение запроса добавления в друзья
-//    public long confirmedFriend(final long idUser, final long idFriend) {
-//        return userStorage.confirmedFriend(mapToUserPairFriendDto(idUser, idFriend));
-//    }
-
     private static boolean valid(User user) {
-        return !user.getEmail().isEmpty() &&
+        return user.getEmail() != null && !user.getEmail().isEmpty() &&
                 user.getEmail().contains("@") &&
-                !user.getLogin().isEmpty() &&
+                user.getLogin() != null && !user.getLogin().isEmpty() &&
                 !user.getLogin().contains(" ") &&
+                user.getBirthday() != null &&
                 user.getBirthday().isBefore(LocalDate.now());
     }
 
     // Получение списка общих друзей между двумя пользователями
     public Collection<User> getListOfMutualFriends(long id, long otherId) {
-        userStorage.getUserById(id);
-        userStorage.getUserById(otherId);
+        if (!userStorage.contains(id)) {
+            throw new ObjectNotFoundException("Пользователя с таким id: " + id + ", не найдено");
+        }
+        if (!userStorage.contains(otherId)) {
+            throw new ObjectNotFoundException("Пользователя с таким id: " + otherId + ", не найдено");
+        }
         Set<Long> friends = userStorage.getFriendsByUser(id).keySet();
         return userStorage.getUsersByListId(
                 userStorage.getFriendsByUser(otherId).keySet()
                         .stream()
                         .filter(friends::contains)
                         .toList());
+    }
+
+    // Получение новостной ленты пользователя по его id
+    public Collection<Feed> getFeed(long userId) {
+        return feedDBStorage.getFeed(userId);
     }
 }

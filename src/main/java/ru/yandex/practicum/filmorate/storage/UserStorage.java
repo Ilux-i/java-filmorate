@@ -10,10 +10,16 @@ import java.util.List;
 
 public interface UserStorage {
 
+    // Добавление пользователя
     User addUser(final User user);
 
+    // Обновление пользователя
     User updateUser(final User user);
 
+    // Удаление пользователя
+    void deleteUser(long id);
+
+    // получение пользователя по id
     User getUserById(long userId);
 
     // Получение списка пользоватеелеей по списку userId
@@ -21,20 +27,14 @@ public interface UserStorage {
 
     HashMap<Long, User> getAllUsers();
 
-    // Удаление пользователя
-    boolean removeUser(User user);
-
     long addFriend(AllFriendDto dto);
-
-//    // Подтверждение запроса в друзья
-//    long confirmedFriend(PairFriendDto dto);
 
     // Получения друзей
     HashMap<Long, FriendshipStatus> getFriendsByUser(long userId);
 
-//    // Получение запросов в друзья
-//    HashSet<Long> getFriendRequestsByUser(User user);
-
     // Удаление друга
     boolean removeFriend(PairFriendDto dto);
+
+    // Проверка наличия пользователя с таким id
+    boolean contains(long id);
 }

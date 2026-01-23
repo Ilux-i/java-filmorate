@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @RestController()
@@ -24,9 +25,15 @@ public class FilmController {
 
     // Обновление фильма
     @PutMapping
-    public Film updateFilm(@RequestBody final Film film) {
+    public Film updateFilm(@RequestBody Film film) {
         log.info(film.toString());
         return filmService.updateFilm(film);
+    }
+
+    // Удаление фильма
+    @DeleteMapping("/{id}")
+    public void deleteFilm(@PathVariable long id) {
+        filmService.remove(id);
     }
 
     // Добавление лайка к фильму от пользователя по их id соответственно
@@ -47,10 +54,19 @@ public class FilmController {
         return filmService.getAllFilms();
     }
 
-    // Получение популярных, судя по лайкам, фильмов(по умолчанию топ 10)
+    // Получение популярных фильмов по жанру и/или году
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") Long count) {
-        return filmService.getPopularFilms(count);
+    public Collection<Film> getPopularFilmsByGenreAndYear(@RequestParam(required = false) Long genreId,
+                                                          @RequestParam(required = false) Integer year,
+                                                          @RequestParam(defaultValue = "10") Long count) {
+        return filmService.getPopularFilms(genreId, year, count);
+    }
+
+    // Получение фильмов по режиссёру
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getFilmsByDirector(@PathVariable Long directorId,
+                                               @RequestParam(required = false) List<String> sortBy) {
+        return filmService.getFilmsByDirector(directorId, sortBy);
     }
 
     // Удаление лайка к фильму
@@ -59,4 +75,16 @@ public class FilmController {
         filmService.removeLike(userId, id);
     }
 
+    // Получение общих фильмов
+    @GetMapping("/common")
+    public Collection<Film> getCommonFilms(@RequestParam final long userId, @RequestParam final long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/search")
+    public Collection<Film> searchFilms(
+            @RequestParam("query") String query,
+            @RequestParam(value = "by", defaultValue = "title") String by) {
+        return filmService.searchFilms(query, by);
+    }
 }

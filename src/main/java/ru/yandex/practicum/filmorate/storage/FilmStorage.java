@@ -5,7 +5,6 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
@@ -17,17 +16,17 @@ public interface FilmStorage {
     // Обновление фильма
     Film updateFilm(final Film film);
 
+    // Удаление фильма
+    void deleteFilm(long id);
+
     // Получение фильма
     Film getFilmById(long filmId);
 
     // Получение популярных фильмов
-    Collection<Film> getPopularFilms(Long count);
+    Collection<Film> getPopularFilms(Long genreId, Integer year, Long limit);
 
     // Получение всех фильмов
-    HashMap<Long, Film> getAllFilms();
-
-    // Удаление фильма
-    boolean removeFilm(Film film);
+    Collection<Film> getAllFilms();
 
     // Получение списка жанров по фильму
     Set<Genre> getGenresByFilm(long filmId);
@@ -35,13 +34,15 @@ public interface FilmStorage {
     // Добавление жанра к фильму
     FilmGenreDto addGenreInFilm(long filmId, long genreId);
 
-    List<FilmGenreDto> addGenresToFilm(long filmId, List<Long> genreIds);
+    // Добавление жанров в фильм
+    void addGenresToFilm(long filmId, Set<Long> genreIds);
 
     // Удаление жанра из фильма
     boolean removeGenreInFilm(long filmId, long genreId);
 
+
     // Удаление жанров из фильма
-    boolean removeGenresInFilm(long filmId, List<Long> genresId);
+    void removeGenresInFilm(long filmId, Set<Long> genresId);
 
     // Поставить лайк
     void setLike(long userId, long filmId);
@@ -52,4 +53,20 @@ public interface FilmStorage {
     // Удаления лайка
     boolean removeLike(long userId, long filmId);
 
+    // Получение общих фильмов
+    Collection<Film> getCommonFilms(long userId, long friendId);
+
+    // Получение фильмов по режиссёру
+    Collection<Film> getFilmsByDirector(Long directorId, List<String> sortBy);
+
+    // Поиск фильмов по названию
+    Collection<Film> searchByTitle(String lowerCase);
+
+    // Поиск фильмов по режиссёру
+    Collection<Film> searchByDirector(String query);
+
+    // Поиск фильмов по режиссёру и названию
+    Collection<Film> searchByAll(String query);
+
+    Collection<Film> fullFilms(Collection<Film> films);
 }

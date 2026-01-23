@@ -18,9 +18,12 @@ public class Film {
     private Mpa mpa;
 
     @Builder.Default
-    private Set<Long> likes = new HashSet<>();
+    private Long likes = 0L;
 
     @Builder.Default
     private Set<Genre> genres = new HashSet<>();
+
+    @Builder.Default
+    private Set<Director> directors = new HashSet<>();
 }
 

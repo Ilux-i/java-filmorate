@@ -2,8 +2,8 @@ package ru.yandex.practicum.filmorate.dao.repository;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.dao.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -14,15 +14,46 @@ import java.util.Optional;
 @Slf4j
 @Repository
 public class UserRepository extends BaseRepository<User> {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM users";
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM users WHERE id = ?";
-    private static final String FIND_BY_LIST_ID_TEMPLATE = "SELECT * FROM users WHERE id in (%s)";
-    private static final String INSERT_QUERY = "INSERT INTO users(email, login, name, birthday) " +
-            "VALUES (?, ?, ?, ?)";
-    private static final String UPDATE_QUERY = "UPDATE users SET email = ?, login = ?, name = ?, birthday = ? WHERE id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM users WHERE id = ?";
 
-    public UserRepository(JdbcTemplate jdbc, RowMapper<User> mapper) {
+    private static final String FIND_ALL_QUERY = """
+            SELECT *
+            FROM users
+            """;
+
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT *
+            FROM users
+            WHERE id = ?
+            """;
+
+    private static final String FIND_BY_LIST_ID_TEMPLATE = """
+            SELECT *
+            FROM users
+            WHERE id in (%s)
+            """;
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO users(email, login, name, birthday)
+            VALUES (?, ?, ?, ?)
+            """;
+
+    private static final String UPDATE_QUERY = """
+            UPDATE users
+            SET email = ?, login = ?, name = ?, birthday = ?
+            WHERE id = ?
+            """;
+
+    private static final String DELETE_QUERY = """
+            DELETE
+            FROM users
+            WHERE id = ?
+            """;
+
+    private static final String EXISTS = """
+            SELECT EXISTS(SELECT 1 FROM users WHERE id = ?)
+            """;
+
+    public UserRepository(JdbcTemplate jdbc, UserRowMapper mapper) {
         super(jdbc, mapper);
     }
 
@@ -72,8 +103,11 @@ public class UserRepository extends BaseRepository<User> {
     }
 
     // Удаление пользователя
-    public boolean remove(long userId) {
-        return delete(DELETE_QUERY, userId);
+    public void remove(long userId) {
+        delete(DELETE_QUERY, userId);
     }
 
+    public boolean contains(long id) {
+        return jdbc.queryForObject(EXISTS, Boolean.class, id);
+    }
 }

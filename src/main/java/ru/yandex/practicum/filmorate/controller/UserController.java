@@ -3,8 +3,11 @@ package ru.yandex.practicum.filmorate.controller;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
+import ru.yandex.practicum.filmorate.service.RecommendationService;
+import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 
@@ -15,6 +18,7 @@ import java.util.Collection;
 public class UserController {
 
     private final UserService userService;
+    private final RecommendationService recommendationService;
 
     // Добавления пользователя
     @PostMapping
@@ -28,10 +32,22 @@ public class UserController {
         return userService.updateUser(user);
     }
 
+    // Удаление пользователя
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable long id) {
+        userService.remove(id);
+    }
+
     // Добавление в друзья
     @PutMapping("/{id}/friends/{friendId}")
     public User addFriends(@PathVariable final long id, @PathVariable final long friendId) {
         return userService.addFriend(id, friendId);
+    }
+
+    // Получение пользователя по его id
+    @GetMapping("/{userId}")
+    public User getUserById(@PathVariable final long userId) {
+        return userService.getUserById(userId);
     }
 
     // Получение всех пользователей
@@ -52,11 +68,22 @@ public class UserController {
         return userService.getListOfMutualFriends(id, otherId);
     }
 
-    // Разрыв дружеской связи между двумя пользователями
+    // Разрыв дружеской связи между двух пользователей
     @DeleteMapping("/{id}/friends/{friendId}")
     public void removeFriend(@PathVariable long id, @PathVariable long friendId) {
         userService.removeFriend(id, friendId);
     }
 
+    // ДОБАВЬТЕ ЭТОТ МЕТОД - получение рекомендаций для пользователя
+    @GetMapping("/{userId}/recommendations")
+    public Collection<Film> getUserRecommendations(@PathVariable final long userId) {
+        log.info("Получение рекомендаций для пользователя с ID: {}", userId);
+        return recommendationService.getRecommendations(userId);
+    }
 
+    // Получение новостной ленты пользователя по его id
+    @GetMapping("/{userId}/feed")
+    public Collection<Feed> getFeed(@PathVariable final long userId) {
+        return userService.getFeed(userId);
+    }
 }
