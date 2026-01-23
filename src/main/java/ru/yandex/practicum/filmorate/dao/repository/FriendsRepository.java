@@ -16,22 +16,30 @@ import java.util.stream.Collectors;
 @Repository
 public class FriendsRepository extends BaseRepository<AllFriendDto> {
 
-    private static final String FIND_FRIENDS_BY_ID_QUERY =
-            "SELECT * " +
-                    "FROM friends " +
-                    "WHERE user_id = ?";
-    private static final String FIND_FRIEND_REQUESTS_BY_ID_QUERY =
-            "SELECT * " +
-                    "FROM friends " +
-                    "WHERE " +
-                    "friend_id = ? " +
-                    "AND status = ?";
-    private static final String FIND_BY_LIST_ID_TEMPLATE = "SELECT * FROM friends WHERE user_id IN (%s)";
-    private static final String INSERT_QUERY = "INSERT INTO friends(user_id, friend_id, status) " +
-            "VALUES (?, ?, ?)";
-    private static final String CONFIRM_FRIEND_QUERY = "UPDATE friends SET status = " + FriendshipStatus.CONFIRMED +
-            " WHERE user_id = ? AND friend_id = ?";
-    private static final String REMOVE_FRIEND_QUERY = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
+    private static final String FIND_FRIENDS_BY_ID_QUERY = """
+            SELECT *
+            FROM friends
+            WHERE user_id = ?
+            """;
+
+    private static final String FIND_BY_LIST_ID_TEMPLATE = """
+            SELECT *
+            FROM friends
+            WHERE user_id IN (%s)
+            """;
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO friends(user_id, friend_id, status)
+            VALUES (?, ?, ?)
+            """;
+
+    private static final String REMOVE_FRIEND_QUERY = """
+            DELETE
+            FROM friends
+            WHERE user_id = ?
+            AND friend_id = ?
+            """;
+
     private static final String DELETE_BY_LIST_QUERY = "DELETE FROM friends WHERE ";
 
     public FriendsRepository(JdbcTemplate jdbc, FriendRowMapper mapper) {
@@ -42,15 +50,6 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
     public List<AllFriendDto> findFriendsByUserId(long userId) {
         return findMany(FIND_FRIENDS_BY_ID_QUERY, userId);
     }
-
-//    // Получение входящих запросов в друзья по id пользователя
-//    public List<AllFriendDto> findFriendRequestsByUserId(long userId) {
-//        return findMany(
-//                FIND_FRIEND_REQUESTS_BY_ID_QUERY,
-//                userId,
-//                FriendshipStatus.CONFIRMED.toString()
-//        );
-//    }
 
     //  Получение связей пользователь-друг по списку пользователей
     public List<AllFriendDto> findFriendsByListId(List<Long> userIds) {
@@ -100,15 +99,6 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
         );
     }
 
-//    // Подтверждение запроса в друзья
-//    public long confirmFriend(PairFriendDto dto) {
-//        return insert(
-//                CONFIRM_FRIEND_QUERY,
-//                dto.getUserId(),
-//                dto.getFriendId()
-//        );
-//    }
-
     // Удаление связи пользователь-друг
     public boolean remove(PairFriendDto dto) {
         return jdbc.update(REMOVE_FRIEND_QUERY, dto.getUserId(), dto.getFriendId()) > 0;
@@ -127,5 +117,4 @@ public class FriendsRepository extends BaseRepository<AllFriendDto> {
 
         update(DELETE_BY_LIST_QUERY + whereClause, params.toArray());
     }
-
 }

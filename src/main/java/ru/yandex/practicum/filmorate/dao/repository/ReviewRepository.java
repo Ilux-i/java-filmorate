@@ -11,20 +11,57 @@ import java.util.Optional;
 
 @Repository
 public class ReviewRepository extends BaseRepository<Review> {
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM reviews WHERE review_id = ?";
-    private static final String FIND_BY_FILM_QUERY =
-            "SELECT * FROM reviews WHERE film_id = ? ORDER BY useful DESC LIMIT ?";
-    private static final String FIND_ALL_QUERY =
-            "SELECT * FROM reviews ORDER BY useful DESC LIMIT ?";
-    private static final String INSERT_QUERY =
-            "INSERT INTO reviews(content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
-    private static final String UPDATE_QUERY =
-            "UPDATE reviews SET content = ?, is_positive = ?, useful = ? WHERE review_id = ?";
-    private static final String DELETE_QUERY = "DELETE FROM reviews WHERE review_id = ?";
-    private static final String EXISTS_BY_USER_AND_FILM_QUERY =
-            "SELECT COUNT(*) FROM reviews WHERE user_id = ? AND film_id = ?";
-    private static final String UPDATE_USEFUL_QUERY =
-            "UPDATE reviews SET useful = useful + ? WHERE review_id = ?";
+
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT *
+            FROM reviews
+            WHERE review_id = ?
+            """;
+
+    private static final String FIND_BY_FILM_QUERY = """
+            SELECT *
+            FROM reviews
+            WHERE film_id = ?
+            ORDER BY useful DESC
+            LIMIT ?
+            """;
+
+    private static final String FIND_ALL_QUERY = """
+            SELECT *
+            FROM reviews
+            ORDER BY useful DESC
+            LIMIT ?
+            """;
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO reviews(content, is_positive, user_id, film_id, useful)
+            VALUES (?, ?, ?, ?, ?)
+            """;
+
+    private static final String UPDATE_QUERY = """
+            UPDATE reviews
+            SET content = ?, is_positive = ?, useful = ?
+            WHERE review_id = ?
+            """;
+
+    private static final String DELETE_QUERY = """
+            DELETE
+            FROM reviews
+            WHERE review_id = ?
+            """;
+
+    private static final String EXISTS_BY_USER_AND_FILM_QUERY = """
+            SELECT COUNT(*)
+            FROM reviews
+            WHERE user_id = ?
+            AND film_id = ?
+            """;
+
+    private static final String UPDATE_USEFUL_QUERY = """
+            UPDATE reviews
+            SET useful = useful + ?
+            WHERE review_id = ?
+            """;
 
     public ReviewRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
         super(jdbc, mapper);
@@ -59,20 +96,8 @@ public class ReviewRepository extends BaseRepository<Review> {
         return review;
     }
 
-//    // Обновить отзыв
-//    public Review update(Review review) {
-//        update(
-//                UPDATE_QUERY,
-//                review.getContent(),
-//                review.getIsPositive(),
-//                review.getUseful(),
-//                review.getReviewId()
-//        );
-//        return review;
-//    }
-
+    // Обновление отзыва UPDATE
     public Review update(Review review) {
-        // Выполняем UPDATE
         update(
                 UPDATE_QUERY,
                 review.getContent(),

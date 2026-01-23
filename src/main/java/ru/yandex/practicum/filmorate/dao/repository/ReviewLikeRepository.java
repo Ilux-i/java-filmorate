@@ -3,26 +3,52 @@ package ru.yandex.practicum.filmorate.dao.repository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.model.Mpa;
+import ru.yandex.practicum.filmorate.model.Review;
 
 import java.util.Optional;
 
 @Repository
-@RequiredArgsConstructor
-public class ReviewLikeRepository {
-    private final JdbcTemplate jdbc;
+public class ReviewLikeRepository extends BaseRepository<Review> {
 
-    private static final String INSERT_LIKE_QUERY =
-            "INSERT INTO review_likes(review_id, user_id, is_like) VALUES (?, ?, ?)";
-    private static final String UPDATE_LIKE_QUERY =
-            "UPDATE review_likes SET is_like = ? WHERE review_id = ? AND user_id = ?";
-    private static final String DELETE_LIKE_QUERY =
-            "DELETE FROM review_likes WHERE review_id = ? AND user_id = ?";
-    private static final String GET_LIKE_STATUS_QUERY =
-            "SELECT is_like FROM review_likes WHERE review_id = ? AND user_id = ?";
-    private static final String EXISTS_LIKE_QUERY =
-            "SELECT COUNT(*) FROM review_likes WHERE review_id = ? AND user_id = ?";
+    private static final String INSERT_LIKE_QUERY = """
+            INSERT INTO review_likes(review_id, user_id, is_like)
+            VALUES (?, ?, ?)
+            """;
 
+    private static final String UPDATE_LIKE_QUERY = """
+            UPDATE review_likes
+            SET is_like = ?
+            WHERE review_id = ?
+            AND user_id = ?
+            """;
+
+    private static final String DELETE_LIKE_QUERY = """
+            DELETE
+            FROM review_likes
+            WHERE review_id = ?
+            AND user_id = ?
+            """;
+
+    private static final String GET_LIKE_STATUS_QUERY = """
+            SELECT is_like
+            FROM review_likes
+            WHERE review_id = ?
+            AND user_id = ?
+            """;
+
+    private static final String EXISTS_LIKE_QUERY = """
+            SELECT COUNT(*)
+            FROM review_likes
+            WHERE review_id = ?
+            AND user_id = ?
+            """;
+
+    public ReviewLikeRepository(JdbcTemplate jdbc, RowMapper<Review> mapper) {
+        super(jdbc, mapper);
+    }
 
     // Добавить лайк на конкретный отзыв
     public void addLike(long reviewId, long userId, boolean isLike) {

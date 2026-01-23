@@ -12,11 +12,34 @@ import java.util.stream.Collectors;
 
 @Repository
 public class FilmGenreRepository extends BaseRepository<FilmGenreDto> {
-    private static final String FIND_ALL_QUERY = "SELECT * FROM film_genre WHERE film_id = ? order by genre_id";
-    private static final String INSERT_QUERY = "INSERT INTO film_genre(film_id, genre_id) VALUES (?, ?)";
-    private static final String INSERT_GENRES_IN_FILM_QUERY = "INSERT INTO film_genre(film_id, genre_id) VALUES (?, ?)";
-    private static final String REMOVE_FILM_GENRE_QUERY = "DELETE FROM film_genre WHERE film_id = ? AND genre_id = ?";
-    private static final String REMOVE_FILM_GENRES_QUERY = "DELETE FROM film_genre WHERE film_id = ? AND genre_id IN (%s)";
+
+    private static final String FIND_ALL_QUERY = """
+            SELECT *
+            FROM film_genre
+            WHERE film_id = ?
+            ORDER BY genre_id
+            """;
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO film_genre(film_id, genre_id)
+            VALUES (?, ?)
+            """;
+
+    private static final String INSERT_GENRES_IN_FILM_QUERY = """
+            INSERT INTO film_genre(film_id, genre_id)
+            VALUES (?, ?)
+            """;
+
+    private static final String REMOVE_FILM_GENRE_QUERY = """
+            DELETE
+            FROM film_genre
+            WHERE film_id = ? AND genre_id = ?
+            """;
+
+    private static final String REMOVE_FILM_GENRES_QUERY = """
+            DELETE FROM film_genre
+            WHERE film_id = ? AND genre_id IN (%s)
+            """;
 
     public FilmGenreRepository(JdbcTemplate jdbc, ru.yandex.practicum.filmorate.dao.mappers.FilmGenreRowMapper mapper) {
         super(jdbc, mapper);

@@ -13,11 +13,35 @@ import java.util.stream.Collectors;
 @Repository
 public class FilmDirectorRepository extends BaseRepository<FilmDirectorDto> {
 
-    private static final String FIND_ALL_DIRECTORS_QUERY = "SELECT * FROM film_director WHERE film_id = ? order by director_id";
-    private static final String FIND_ALL_FILMS_QUERY = "SELECT * FROM film_director WHERE director_id = ? order by film_id";
-    private static final String INSERT_QUERY = "INSERT INTO film_director(film_id, director_id) VALUES (?, ?)";
-    private static final String INSERT_DIRECTORS_IN_FILM_QUERY = "INSERT INTO film_director(film_id, director_id) VALUES (?, ?)";
-    private static final String REMOVE_FILM_DIRECTOR_QUERY = "DELETE FROM film_director WHERE film_id = ? AND director_id = ?";
+    private static final String FIND_ALL_DIRECTORS_QUERY = """
+            SELECT *
+            FROM film_director
+            WHERE film_id = ?
+            ORDER BY director_id
+            """;
+
+    private static final String FIND_ALL_FILMS_QUERY = """
+            SELECT *
+            FROM film_director
+            WHERE director_id = ?
+            ORDER BY film_id
+            """;
+
+    private static final String INSERT_QUERY = """
+            INSERT INTO film_director(film_id, director_id)
+            VALUES (?, ?)
+            """;
+
+    private static final String INSERT_DIRECTORS_IN_FILM_QUERY = """
+            INSERT INTO film_director(film_id, director_id)
+            VALUES (?, ?)
+            """;
+
+    private static final String REMOVE_FILM_DIRECTOR_QUERY = """
+            DELETE FROM film_director
+            WHERE film_id = ? AND director_id = ?
+            """;
+
     private static final String DELETE_BY_LIST_QUERY = "DELETE FROM film_director WHERE ";
 
     public FilmDirectorRepository(JdbcTemplate jdbc, RowMapper<FilmDirectorDto> mapper) {

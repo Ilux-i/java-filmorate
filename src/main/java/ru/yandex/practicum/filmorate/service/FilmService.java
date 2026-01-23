@@ -49,7 +49,6 @@ public class FilmService {
     private final FeedDBStorage feedDBStorage;
 
     private final FilmDirectorRepository filmDirectorRepository;
-    private final DirectorRepository directorRepository;
 
     // Добавление фильма
     public Film addFilm(final Film film) {
@@ -145,18 +144,6 @@ public class FilmService {
                 .map(Genre::getId)
                 .collect(Collectors.toSet());
 
-//        // Жанры, которые надо удалить
-//        List<Long> toRemove = oldGenres.stream()
-//                .filter(genre -> !genres.contains(genre))
-//                .map(Genre::getId)
-//                .collect(Collectors.toList());
-//
-//        // Жанры, которые надо добавить
-//        List<Long> toAdd = genres.stream()
-//                .filter(genre -> !oldGenres.contains(genre))
-//                .map(Genre::getId)
-//                .collect(Collectors.toList());
-
         if (!oldGenres.isEmpty()) {
             filmStorage.removeGenresInFilm(filmId, oldGenres);
         }
@@ -175,16 +162,6 @@ public class FilmService {
     private void updateDirectors(long filmId, Set<Director> directors) {
         // Старые режиссёры
         List<FilmDirectorDto> oldDirectors = filmDirectorRepository.findAllByFilm(filmId);
-
-//        // Режиссёры, которые надо удалить
-//        List<FilmDirectorDto> toRemove = oldDirectors.stream()
-//                .filter(pair -> !directors.contains(pair.getDirectorId()))
-//                .collect(Collectors.toList());
-//
-//        // Режиссёры, которые надо добавить
-//        List<Long> toAdd = directors.stream()
-//                .filter(directorId -> !oldDirectors.contains(directorId))
-//                .collect(Collectors.toList());
 
         if (!oldDirectors.isEmpty()) {
             filmDirectorRepository.removeFilmDirectorByPair(oldDirectors);

@@ -12,6 +12,7 @@ import java.util.Collection;
 @Component("FeedDbStorage")
 @RequiredArgsConstructor
 public class FeedDBStorage {
+
     private final FeedRepository feedRepository;
     private final UserStorage userStorage;
 

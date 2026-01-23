@@ -48,12 +48,12 @@ public class RecommendationController {
 
     // Получение топовых жанров
     @GetMapping("/genres/top")
-    public ResponseEntity<List<Map<String, Object>>> getTopGenres(@RequestParam(defaultValue = "10") Long limit) {
+    public List<Map<String, Object>> getTopGenres(@RequestParam(defaultValue = "10") Long limit) {
         log.info("=== START Получение топ-{} жанров ===", limit);
         try {
             List<Map<String, Object>> topGenres = recommendationService.getTopGenres(limit);
             log.info("=== SUCCESS Топ жанров получены, количество: {} ===", topGenres.size());
-            return ResponseEntity.ok(topGenres);
+            return topGenres;
         } catch (Exception e) {
             log.error("=== ERROR Ошибка при получении топовых жанров: {} ===", e.getMessage(), e);
             throw e;

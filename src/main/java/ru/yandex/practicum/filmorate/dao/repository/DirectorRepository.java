@@ -11,15 +11,34 @@ import java.util.Optional;
 @Repository
 public class DirectorRepository extends BaseRepository<Director> {
 
-    private static final String FIND_BY_ID_QUERY = "SELECT * FROM directors WHERE id = ?";
+    private static final String FIND_BY_ID_QUERY = """
+            SELECT *
+            FROM directors
+            WHERE id = ?
+            """;
 
-    private static final String FIND_ALL_QUERY = "SELECT * FROM directors order by id";
+    private static final String FIND_ALL_QUERY = """
+            SELECT *
+            FROM directors
+            ORDER BY id
+            """;
 
-    private static final String INSERT_QUERY = "INSERT INTO directors(name) VALUES (?)";
+    private static final String INSERT_QUERY = """
+            INSERT INTO directors(name)
+            VALUES (?)
+            """;
 
-    private static final String UPDATE_QUERY = "UPDATE directors SET name = ? WHERE id = ?";
+    private static final String UPDATE_QUERY = """
+            UPDATE directors
+            SET name = ?
+            WHERE id = ?
+            """;
 
-    private static final String DELETE_QUERY = "DELETE FROM directors WHERE id = ?";
+    private static final String DELETE_QUERY = """
+            DELETE
+            FROM directors
+            WHERE id = ?
+            """;
 
     public DirectorRepository(JdbcTemplate jdbc, RowMapper<Director> mapper) {
         super(jdbc, mapper);
@@ -59,5 +78,4 @@ public class DirectorRepository extends BaseRepository<Director> {
     public void remove(long directorId) {
         delete(DELETE_QUERY, directorId);
     }
-
 }

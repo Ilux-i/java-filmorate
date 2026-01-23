@@ -19,7 +19,7 @@ import java.util.*;
 public class RecommendationService {
 
     private final StatisticsRepository statisticsRepository;
-    private final UserStorage userStorage; // Этот импорт теперь будет работать
+    private final UserStorage userStorage;
     private final GenreService genreService;
     private final FilmStorage filmStorage;
 
@@ -109,18 +109,18 @@ public class RecommendationService {
                 limit = 10L;
             }
 
-            String sql = "SELECT " +
-                    "    g.id as genreId, " +
-                    "    g.name as genreName, " +
-                    "    COUNT(DISTINCT l.id) as totalLikes, " +
-                    "    COUNT(DISTINCT f.id) as totalFilms " +
-                    "FROM genres g " +
-                    "LEFT JOIN film_genre fg ON g.id = fg.genre_id " +
-                    "LEFT JOIN films f ON fg.film_id = f.id " +
-                    "LEFT JOIN likes l ON f.id = l.film_id " +
-                    "GROUP BY g.id, g.name " +
-                    "ORDER BY totalLikes DESC, totalFilms DESC " +
-                    "LIMIT ?";
+            String sql = """
+                    SELECT g.id as genreId, g.name as genreName,
+                    COUNT(DISTINCT l.id) as totalLikes,
+                    COUNT(DISTINCT f.id) as totalFilms
+                    FROM genres g
+                    LEFT JOIN film_genre fg ON g.id = fg.genre_id
+                    LEFT JOIN films f ON fg.film_id = f.id
+                    LEFT JOIN likes l ON f.id = l.film_id
+                    GROUP BY g.id, g.name
+                    ORDER BY totalLikes DESC, totalFilms DESC
+                    LIMIT ?
+                    """;
 
             return statisticsRepository.getJdbcTemplate().query(sql, (rs, rowNum) -> {
                 Map<String, Object> genreStat = new HashMap<>();
