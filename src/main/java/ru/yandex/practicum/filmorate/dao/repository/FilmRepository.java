@@ -47,13 +47,14 @@ public class FilmRepository extends BaseRepository<Film> {
             ORDER BY COUNT(l.ID) DESC
             LIMIT ?
             """;
+
     private static final String COMMON_FILMS_QUERY = """
-                    SELECT *
-                    FROM films f
-                    WHERE f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
-                    AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
-                    ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC
-                    """;
+            SELECT *
+            FROM films f
+            WHERE f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
+            AND f.id IN (SELECT film_id FROM likes WHERE user_id = ?)
+            ORDER BY (SELECT COUNT(*) FROM likes l WHERE l.film_id = f.id) DESC
+            """;
 
     private static final String GET_FILMS_BY_DIRECTOR_BY_LIKES = """
             SELECT f.id, f.name, f.description, f.releaseDate, f.duration, f.rating_id,

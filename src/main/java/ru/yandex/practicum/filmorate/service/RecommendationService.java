@@ -5,11 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.repository.StatisticsRepository;
 import ru.yandex.practicum.filmorate.dto.statistics.GenreYearStatistic;
-import ru.yandex.practicum.filmorate.exception.InternalServerException;
-import ru.yandex.practicum.filmorate.exception.ObjectNotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage; // Добавьте эту строку
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.*;
 
@@ -25,91 +23,73 @@ public class RecommendationService {
 
     public Collection<Film> getRecommendations(Long userId) {
         log.info("====== RecommendationService.getRecommendations ВЫЗВАН ДЛЯ userId: {} ======", userId);
-        try {
-            // Проверяем существование пользователя
-            userStorage.getUserById(userId);
+        // Проверяем существование пользователя
+        userStorage.getUserById(userId);
 
-            // Получаем рекомендации только на основе коллаборативной фильтрации
-            List<Film> recommendations = statisticsRepository.getRecommendationsForUser(userId);
+        // Получаем рекомендации только на основе коллаборативной фильтрации
+        List<Film> recommendations = statisticsRepository.getRecommendationsForUser(userId);
 
-            log.debug("Коллаборативные рекомендации для пользователя {}: {} фильмов",
-                    userId, recommendations.size());
+        log.debug("Коллаборативные рекомендации для пользователя {}: {} фильмов",
+                userId, recommendations.size());
 
-            // Обогащаем фильмы полной информацией
-            Collection<Film> result = filmStorage.fullFilms(recommendations);
+        // Обогащаем фильмы полной информацией
+        Collection<Film> result = filmStorage.fullFilms(recommendations);
 
-            log.info("====== RecommendationService.getRecommendations УСПЕШНО ВЕРНУЛ {} РЕКОМЕНДАЦИЙ ДЛЯ userId: {} ======",
-                    result.size(), userId);
-            return result;
-        } catch (ObjectNotFoundException e) {
-            log.error("Пользователь с ID: {} не найден", userId, e);
-            throw e;
-        } catch (Exception e) {
-            log.error("Ошибка в RecommendationService.getRecommendations для userId {}: {}", userId, e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении рекомендаций: " + e.getMessage());
-        }
+        log.info("====== RecommendationService.getRecommendations УСПЕШНО ВЕРНУЛ {} РЕКОМЕНДАЦИЙ ДЛЯ userId: {} ======",
+                result.size(), userId);
+        return result;
     }
 
     // Получение расширенной статистики
     public Map<String, Object> getExtendedStatistics() {
-        try {
-            List<GenreYearStatistic> statistics = statisticsRepository.getGenreYearStatistics();
+        List<GenreYearStatistic> statistics = statisticsRepository.getGenreYearStatistics();
 
-            // Группируем по годам
-            Map<Integer, List<GenreYearStatistic>> byYear = new TreeMap<>(Collections.reverseOrder());
-            for (GenreYearStatistic stat : statistics) {
-                byYear.computeIfAbsent(stat.getYear(), k -> new ArrayList<>()).add(stat);
-            }
-
-            // Группируем по жанрам
-            Map<Long, List<GenreYearStatistic>> byGenre = new HashMap<>();
-            for (GenreYearStatistic stat : statistics) {
-                byGenre.computeIfAbsent(stat.getGenreId(), k -> new ArrayList<>()).add(stat);
-            }
-
-            // Находим топовые жанры по годам
-            Map<Integer, Map<String, Object>> topGenresByYear = new HashMap<>();
-            for (Map.Entry<Integer, List<GenreYearStatistic>> entry : byYear.entrySet()) {
-                Integer year = entry.getKey();
-                List<GenreYearStatistic> yearStats = entry.getValue();
-
-                if (!yearStats.isEmpty()) {
-                    GenreYearStatistic topStat = yearStats.get(0);
-                    Map<String, Object> topGenreInfo = new HashMap<>();
-                    topGenreInfo.put("genreId", topStat.getGenreId());
-                    try {
-                        topGenreInfo.put("genreName", genreService.getGenre(topStat.getGenreId()).getName());
-                    } catch (Exception e) {
-                        topGenreInfo.put("genreName", "Неизвестный жанр");
-                    }
-                    topGenreInfo.put("likeCount", topStat.getLikeCount());
-                    topGenreInfo.put("filmCount", topStat.getFilmCount());
-                    topGenresByYear.put(year, topGenreInfo);
-                }
-            }
-
-            // Формируем результат
-            Map<String, Object> result = new HashMap<>();
-            result.put("totalStatisticRecords", statistics.size());
-            result.put("statisticsByYear", byYear);
-            result.put("topGenresByYear", topGenresByYear);
-            result.put("yearsCovered", byYear.keySet().size());
-
-            return result;
-        } catch (Exception e) {
-            log.error("Ошибка при получении статистики: {}", e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении статистики: " + e.getMessage());
+        // Группируем по годам
+        Map<Integer, List<GenreYearStatistic>> byYear = new TreeMap<>(Collections.reverseOrder());
+        for (GenreYearStatistic stat : statistics) {
+            byYear.computeIfAbsent(stat.getYear(), k -> new ArrayList<>()).add(stat);
         }
+
+        // Группируем по жанрам
+        Map<Long, List<GenreYearStatistic>> byGenre = new HashMap<>();
+        for (GenreYearStatistic stat : statistics) {
+            byGenre.computeIfAbsent(stat.getGenreId(), k -> new ArrayList<>()).add(stat);
+        }
+
+        // Находим топовые жанры по годам
+        Map<Integer, Map<String, Object>> topGenresByYear = new HashMap<>();
+        for (Map.Entry<Integer, List<GenreYearStatistic>> entry : byYear.entrySet()) {
+            Integer year = entry.getKey();
+            List<GenreYearStatistic> yearStats = entry.getValue();
+
+            if (!yearStats.isEmpty()) {
+                GenreYearStatistic topStat = yearStats.getFirst();
+                Map<String, Object> topGenreInfo = new HashMap<>();
+                topGenreInfo.put("genreId", topStat.getGenreId());
+                topGenreInfo.put("genreName", genreService.getGenre(topStat.getGenreId()).getName());
+                topGenreInfo.put("likeCount", topStat.getLikeCount());
+                topGenreInfo.put("filmCount", topStat.getFilmCount());
+                topGenresByYear.put(year, topGenreInfo);
+            }
+        }
+
+        // Формируем результат
+        Map<String, Object> result = new HashMap<>();
+        result.put("totalStatisticRecords", statistics.size());
+        result.put("statisticsByYear", byYear);
+        result.put("topGenresByYear", topGenresByYear);
+        result.put("yearsCovered", byYear.keySet().size());
+
+        return result;
     }
 
     // Получение топовых жанров
     public List<Map<String, Object>> getTopGenres(Long limit) {
-        try {
-            if (limit == null || limit <= 0) {
-                limit = 10L;
-            }
+        if (limit == null || limit <= 0) {
+            limit = 10L;
+        }
 
-            String sql = """
+        String sql = """
                     SELECT g.id as genreId, g.name as genreName,
                     COUNT(DISTINCT l.id) as totalLikes,
                     COUNT(DISTINCT f.id) as totalFilms
@@ -122,7 +102,7 @@ public class RecommendationService {
                     LIMIT ?
                     """;
 
-            return statisticsRepository.getJdbcTemplate().query(sql, (rs, rowNum) -> {
+        return statisticsRepository.getJdbcTemplate().query(sql, (rs, rowNum) -> {
                 Map<String, Object> genreStat = new HashMap<>();
                 genreStat.put("genreId", rs.getLong("genreId"));
                 genreStat.put("genreName", rs.getString("genreName"));
@@ -130,9 +110,5 @@ public class RecommendationService {
                 genreStat.put("totalFilms", rs.getLong("totalFilms"));
                 return genreStat;
             }, limit);
-        } catch (Exception e) {
-            log.error("Ошибка при получении топовых жанров: {}", e.getMessage(), e);
-            throw new InternalServerException("Ошибка при получении топовых жанров: " + e.getMessage());
-        }
     }
 }
